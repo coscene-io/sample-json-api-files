@@ -79,6 +79,8 @@ def generate_new_revision_for_record_with_files(record, filepaths):
         "method": 2
     }
 
+    print(json.dumps(payload))
+
     try:
         response = requests.post(
             url=url,
