@@ -1,0 +1,5 @@
+{
+  "preSignedUrls": {
+    "warehouses/1c593c01-eaa3-4b85-82ed-277494820866/projects/2b329c23-2d16-4290-a586-c7ad63b6f1d1/records/0cd6a79d-5f22-439f-be78-0fd6407f0bda/blobs/752d5cfe5559085a81bd7e2c9d823c17bcfb109a947e79f5e48717bc0a237cab": "https://storage-east-us.coscene.dev/default/blobs/752d5cfe5559085a81bd7e2c9d823c17bcfb109a947e79f5e48717bc0a237cab?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=coscene%2F20221113%2Feast-us%2Fs3%2Faws4_request&X-Amz-Date=20221113T165156Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=27041467158f7628c8f2ac88b64ed942939d8a688141bfd6da418f1ea8dff0de"
+  }
+}

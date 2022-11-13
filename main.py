@@ -9,7 +9,7 @@ import requests
 API_BASE = "https://api.coscene.dev"
 
 # Account Specific
-BEARER_TOKEN = "eyJraWQiOiI2YmE0N2Y0My02MWZkLTRlOGYtODhjMy05MTZjZTU3YjZlY2IiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhYmQ4OTBmMC1iMDViLTQwZjktOTllOC02YzFkMjI4ZmU4M2MiLCJpc3MiOiJodHRwczovL2FwaS5jb3NjZW5lLmRldi9zdXBlcnRva2Vucy1zZXJ2ZXIvYXV0aCIsImV4cCI6MTY2ODMyNjk3NCwiaWF0IjoxNjY4MzA1MzQzLCJvcmdJZCI6IjNmZjkxOGM3LTVkOGQtNDA0Yy1iZWJiLWU1NDk4NTI3ZDg5NSJ9.R4te1MUKYkpM1GbEvPVI4Y8Yl3Z1920TTCNfqhBmMlmbN5yRHX2iOiXSVbhmJLILc3PcPa6qgIHtVSfBHN9JNZco0lGKSH6AbdkQ0eFZt9Ka2AK67VF4R2r32UXpOMtFRIOGYYxJY2uqBlWD9Xx-v5rdH7kUJevaatKfcfQlEkldxzbNtDKlUzXMEWsN2WeAAQiQatghzbLUu34YljnragHTeWOIQnNVQasq0rxZkSTLF_SqkfrtlZaTxF3ix4E_FiVyYphCi3AT6JPmICyzqMTBhDErPLB4AtmbuspB8a7_aHsm4xAPpKDo4PqxW8k0kRYyiHhqtlSL5yZDbsmCrw"
+BEARER_TOKEN = "eyJraWQiOiI2YmE0N2Y0My02MWZkLTRlOGYtODhjMy05MTZjZTU3YjZlY2IiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhYmQ4OTBmMC1iMDViLTQwZjktOTllOC02YzFkMjI4ZmU4M2MiLCJpc3MiOiJodHRwczovL2FwaS5jb3NjZW5lLmRldi9zdXBlcnRva2Vucy1zZXJ2ZXIvYXV0aCIsImV4cCI6MTY2ODM3NjQ0NSwiaWF0IjoxNjY4MzU0ODE0LCJvcmdJZCI6IjNmZjkxOGM3LTVkOGQtNDA0Yy1iZWJiLWU1NDk4NTI3ZDg5NSJ9.IWIIE4C5t-Fj8sjG_fBSG4HJCs_kYMj7TR4kV3DcariaURakNGCLLn4gQiRD2xltuCWiGWsDSuukZ8UJzIT54V3xcQMnyYq_EW56wVb2l6ZDWsOLjBDYhKfr6IE0kyP9zL1MyibowD5fOKZfL-O6jQpjk2a1KnEPGz3QcPZWOVQVQ63Lr4NK7GYDmapSy_hQqUb_g5PSGEUKwI3bI2QI4jQi8PFWlCiAIFa38Wx2Xd5S78f7JSVLsaT-z7Lr_-dpRxw26y2y3M8O5QOupl9aTAEUeJDnX9TU77bmHgmektBOP31v0dAXqTKF_KHEAjRAl3J0tZsNKOS9FD84nKQ-NA"
 WAREHOUSE_ID = "1c593c01-eaa3-4b85-82ed-277494820866"
 PROJECT_ID = "2b329c23-2d16-4290-a586-c7ad63b6f1d1"
 
@@ -47,7 +47,6 @@ def create_record(name="Default Test Name"):
         # parse result to json
         result = response.json()
 
-        print(response.status_code)
         print("Successfully created the record " + result.get("name"))
         return result
 
@@ -77,7 +76,6 @@ def generate_new_revision_for_record_with_files(record, filepaths):
     # Generte file lists, including
     # filename, size, and sha256
     files = generate_file_list_from_filepaths(filepaths)
-    print(files)
 
     url = API_BASE + "/dataplatform/v1alpha2/" + record.get(
         "name") + "/revisions:generate"
@@ -92,7 +90,6 @@ def generate_new_revision_for_record_with_files(record, filepaths):
             "transformationsList": [],
         }
     }
-    print(payload)
 
     try:
         response = requests.post(
@@ -122,7 +119,6 @@ def get_blobs_for_revision_files(record, revision_files):
     ]
 
     payload = {"requests.name": ",".join(revision_filenames)}
-    print(payload)
 
     try:
         response = requests.get(
@@ -141,13 +137,56 @@ def get_blobs_for_revision_files(record, revision_files):
 
 
 def request_upload_urls_for_blobs(record, blobs):
-    print(record)
-    print(blobs)
+
+    # Generte file lists, including
+    # filename, size, and sha256
+
+    url = API_BASE + "/dataplatform/v1alpha2/" + record.get(
+        "name") + ":batchGenerateUploadUrls"
+
+    blob_names = map(lambda blob: {"blob": blob.get("name")},
+                     blobs.get("blobs"))
+
+    payload = {"requests": list(blob_names)}
+
+    try:
+        response = requests.post(
+            url=url,
+            data=json.dumps(payload),
+            headers=authorized_headers(),
+        )
+
+        upload_urls = response.json()
+        print("Successfully requested upload urls")
+        return upload_urls
+
+    except requests.exceptions.RequestException as e:
+        print("Request upload urls failed")
+        print(e)
 
 
-def upload_files(filepaths, upload_urls):
-    print(filepaths)
-    print(upload_urls)
+def find_blob_name_for_file(filepath, revision_files, blobs):
+    filename = os.path.basename(filepath)
+    revision_file = next(
+        filter(lambda rf: rf.get("filename") == filename, revision_files),
+        None)
+    blob = next(
+        filter(lambda blob: blob.get("sha256") == revision_file.get("sha256"),
+               blobs.get("blobs")), None)
+
+    return blob.get("name")
+
+
+def upload_files(filepaths, revision_files, blobs, upload_urls):
+    for i in range(len(filepaths)):
+        blob_name = find_blob_name_for_file(filepaths[0], revision_files,
+                                            blobs)
+        upload_url = upload_urls.get("preSignedUrls", {}).get(blob_name, None)
+        if upload_url is not None:
+            with open(filepaths[i], 'rb') as f:
+                print("Start uploading " + filepaths[i])
+                requests.post(upload_url, data=f)
+                print("Finished uploading " + filepaths[i])
 
 
 if __name__ == "__main__":
@@ -161,21 +200,26 @@ if __name__ == "__main__":
     # 3. 在刚创建的记录上，声明文件清单，创建一个新的版本
     # TODO, this only works for one file, stilling figuring out how to do multiple file batch get blob
     # JSON mapping kinda vague here
-    sample_files = ["./nihon.jpg"]
+    sample_files = ["./2.jpg"]
     revision = generate_new_revision_for_record_with_files(
         record, sample_files)
 
     # 4. 从新建的版本中获取文件信息，找到这些文件的 Blob 信息
-    revision_files = filter(
-        lambda file: file.get("filename") != ".cos/config.json",
-        revision.get("files"))
+    revision_files = list(
+        filter(lambda file: file.get("filename") != ".cos/config.json",
+               revision.get("files")))
+    print(revision_files)
 
-    blobs = get_blobs_for_revision_files(record, list(revision_files))
+    blobs = get_blobs_for_revision_files(record, revision_files)
+    print(blobs)
 
     # 5. 为拿到的 Blobs 获取上传链接，进行上传
 
     upload_urls = request_upload_urls_for_blobs(record, blobs)
+    print(upload_urls)
 
     # 6. 上传文件
 
-    upload_files(sample_files, upload_urls)
+    upload_files(sample_files, revision_files, blobs, upload_urls)
+
+    print("Done")
