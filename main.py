@@ -2,6 +2,7 @@
 import hashlib
 import json
 import os
+import itertools
 
 import requests
 
@@ -14,7 +15,7 @@ WAREHOUSE_ID = "1c593c01-eaa3-4b85-82ed-277494820866"
 PROJECT_ID = "2b329c23-2d16-4290-a586-c7ad63b6f1d1"
 
 # Files to be uploaded
-sample_files = ["./2.jpg"]
+sample_files = ["./samples/2.jpg"]
 
 
 def authorized_headers():
@@ -165,12 +166,14 @@ def request_upload_urls_for_blobs(record, blobs):
 
 def find_blob_name_for_file(filepath, revision_files, blobs):
     filename = os.path.basename(filepath)
+
     revision_file = next(
-        filter(lambda rf: rf.get("filename") == filename, revision_files),
-        None)
+        itertools.ifilter(lambda rf: rf.get("filename") == filename,
+                          revision_files), None)
     blob = next(
-        filter(lambda blob: blob.get("sha256") == revision_file.get("sha256"),
-               blobs.get("blobs")), None)
+        itertools.ifilter(
+            lambda blob: blob.get("sha256") == revision_file.get("sha256"),
+            blobs.get("blobs")), None)
 
     if blob.get("state").get("phase") == "ACTIVE":
         print("Skipping as this blob already exists")
