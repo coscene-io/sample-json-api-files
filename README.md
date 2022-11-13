@@ -5,6 +5,7 @@
 Tested with the following setup:
 
 - python 2.7.18 with M1 Arm Chips
+- an maximum of 500mb video files
 
 ## Dependency
 
