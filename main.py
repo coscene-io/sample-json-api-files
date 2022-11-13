@@ -43,7 +43,7 @@ def create_record(name="Default Test Name"):
         )
         if response.status_code == 401:
             raise Exception("Unauthorized")
-        # parse result to json
+
         result = response.json()
 
         print("Successfully created the record " + result.get("name"))
@@ -207,8 +207,7 @@ if __name__ == "__main__":
     record = create_record(name="Test Record")
 
     # 3. 在刚创建的记录上，声明文件清单，创建一个新的版本
-    # TODO, this only works for one file, stilling figuring out how to do multiple file batch get blob
-    # JSON mapping kinda vague here
+    # TODO, this only works for one file, still figuring out how to do multiple file batch get blob
     revision = generate_new_revision_for_record_with_files(
         record, sample_files)
 
