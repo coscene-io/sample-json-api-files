@@ -13,10 +13,8 @@ BEARER_TOKEN = "eyJraWQiOiI2YmE0N2Y0My02MWZkLTRlOGYtODhjMy05MTZjZTU3YjZlY2IiLCJ0
 WAREHOUSE_ID = "1c593c01-eaa3-4b85-82ed-277494820866"
 PROJECT_ID = "2b329c23-2d16-4290-a586-c7ad63b6f1d1"
 
-# Testing Data
-# yapf: disable
-# revision = {"files": [{"size": "3037426", "mediaType": "", "sha256": "752d5cfe5559085a81bd7e2c9d823c17bcfb109a947e79f5e48717bc0a237cab", "name": "warehouses/1c593c01-eaa3-4b85-82ed-277494820866/projects/2b329c23-2d16-4290-a586-c7ad63b6f1d1/records/b49e2323-f9d7-4a8f-93f0-9d1bf03e19be/files/nihon.jpg", "filename": "nihon.jpg"}, {"updateTime": "2022-11-13T03:07:25.141700212Z", "name": "warehouses/1c593c01-eaa3-4b85-82ed-277494820866/projects/2b329c23-2d16-4290-a586-c7ad63b6f1d1/records/b49e2323-f9d7-4a8f-93f0-9d1bf03e19be/files/.cos/config.json", "media": {"topics": [], "@type": "type.googleapis.com/coscene.dataplatform.v1alpha1.common.ConfigMedia", "createTime": "2022-11-13T03:07:25.141700212Z"}, "mediaType": "application/vnd.coscene.record.config.v1alpha1+json", "filename": ".cos/config.json", "sha256": "a0b5e961aaaa933587705d1d79673aaf28b6b0ed363c7f1a9fb389bca1199137", "createTime": "2022-11-13T03:07:25.141700212Z", "size": "535"}], "name": "warehouses/1c593c01-eaa3-4b85-82ed-277494820866/projects/2b329c23-2d16-4290-a586-c7ad63b6f1d1/records/b49e2323-f9d7-4a8f-93f0-9d1bf03e19be/revisions/a887831416f69d2e4f847aa3c60f4fd68b6f24ab27fc6c99458db50f9564591e", "description": "new revision including 2 files and 0 transformations", "parentSha256": "8070be24c4b1fbd8797476bfdc8e46fa622737c92bb5fe3f9f387132f790655a", "user": {"updateTime": "2022-11-12T12:19:04.329Z", "name": "users/abd890f0-b05b-40f9-99e8-6c1d228fe83c", "countryCallingCode": "", "tags": {"unionId": "c8t90vr7v66EVF3oawVKqQiEiE", "thirdPartyCorpId": "ding467e38c049a28c36a1320dcb25e91351", "thirdPartyId": "DING_TALK"}, "createTime": "2022-08-25T07:57:25.241Z", "phoneNumber": "", "avatar": "https://static-legacy.dingtalk.com/media/lADPDgQ9z5reJxjNAijNAig_552_552.jpg", "nickname": "\u90d1\u5b87\u9756", "email": "c8t90vr7v66evf3oawvkqqieie@coscene.auth", "metadata": {"agreedAgreement": "true"}}, "sha256": "a887831416f69d2e4f847aa3c60f4fd68b6f24ab27fc6c99458db50f9564591e", "config": {"topics": [], "createTime": "2022-11-13T03:07:25.136978760Z"}, "createTime": "2022-11-13T03:07:25.136978760Z", "transformations": []}
-# yapf: enable
+# Files to be uploaded
+sample_files = ["./2.jpg"]
 
 
 def authorized_headers():
@@ -174,18 +172,26 @@ def find_blob_name_for_file(filepath, revision_files, blobs):
         filter(lambda blob: blob.get("sha256") == revision_file.get("sha256"),
                blobs.get("blobs")), None)
 
-    return blob.get("name")
+    if blob.get("state").get("phase") == "ACTIVE":
+        print("Skipping as this blob already exists")
+        return None
+    else:
+        return blob.get("name")
 
 
 def upload_files(filepaths, revision_files, blobs, upload_urls):
     for i in range(len(filepaths)):
         blob_name = find_blob_name_for_file(filepaths[0], revision_files,
                                             blobs)
+        if blob_name is None:
+            return
+
         upload_url = upload_urls.get("preSignedUrls", {}).get(blob_name, None)
         if upload_url is not None:
             with open(filepaths[i], 'rb') as f:
                 print("Start uploading " + filepaths[i])
-                requests.post(upload_url, data=f)
+                response = requests.put(upload_url, data=f)
+                response.raise_for_status()
                 print("Finished uploading " + filepaths[i])
 
 
@@ -200,7 +206,6 @@ if __name__ == "__main__":
     # 3. 在刚创建的记录上，声明文件清单，创建一个新的版本
     # TODO, this only works for one file, stilling figuring out how to do multiple file batch get blob
     # JSON mapping kinda vague here
-    sample_files = ["./2.jpg"]
     revision = generate_new_revision_for_record_with_files(
         record, sample_files)
 
@@ -208,15 +213,12 @@ if __name__ == "__main__":
     revision_files = list(
         filter(lambda file: file.get("filename") != ".cos/config.json",
                revision.get("files")))
-    print(revision_files)
 
     blobs = get_blobs_for_revision_files(record, revision_files)
-    print(blobs)
 
     # 5. 为拿到的 Blobs 获取上传链接，进行上传
 
     upload_urls = request_upload_urls_for_blobs(record, blobs)
-    print(upload_urls)
 
     # 6. 上传文件
 
