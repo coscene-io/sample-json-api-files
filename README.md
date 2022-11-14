@@ -21,5 +21,5 @@ Replace these info in the beginning of the file:
 
 ## Run
 ```shell
-    python cos.py --bearer-token <YOUR_BEARER_TOKEN> ./samples/3.jpg
+python cos.py --bearer-token <YOUR_BEARER_TOKEN> ./samples/3.jpg
 ```
