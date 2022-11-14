@@ -6,9 +6,6 @@ import itertools
 
 import requests
 
-# BASE INFO
-API_BASE = "https://api.coscene.dev"
-
 
 def get_authorized_headers(BEARER_TOKEN):
     return {
@@ -23,18 +20,18 @@ def default_params(page_size="10"):
 
 
 def create_record(
-    WAREHOUSE_ID,
-    PROJECT_ID,
-    authorized_headers,
-    name="Default Test Name",
+        API_BASE,
+        WAREHOUSE_ID,
+        PROJECT_ID,
+        authorized_headers,
+        name="Default Test Name",
 ):
-
     payload = {"title": name}
 
     try:
         response = requests.post(
             url=API_BASE + "/dataplatform/v1alpha2/warehouses/" +
-            WAREHOUSE_ID + "/projects/" + PROJECT_ID + "/records",
+                WAREHOUSE_ID + "/projects/" + PROJECT_ID + "/records",
             json=payload,
             headers=authorized_headers,
         )
@@ -47,7 +44,7 @@ def create_record(
         return result
 
     except requests.exceptions.RequestException:
-        print("Create Record failed")
+        raise Exception("Create Record failed")
 
 
 def generate_file_list_from_filepaths(filepaths):
@@ -68,7 +65,7 @@ def generate_file_list_from_filepaths(filepaths):
     return files
 
 
-def generate_new_revision_for_record_with_files(record, filepaths,
+def generate_new_revision_for_record_with_files(API_BASE, record, filepaths,
                                                 authorized_headers):
     # Generte file lists, including
     # filename, size, and sha256
@@ -104,7 +101,7 @@ def generate_new_revision_for_record_with_files(record, filepaths,
         print(e)
 
 
-def get_blobs_for_revision_files(record, revision_files, authorized_headers):
+def get_blobs_for_revision_files(API_BASE, record, revision_files, authorized_headers):
     # Generte file lists, including
     # filename, size, and sha256
     url = API_BASE + "/dataplatform/v1alpha2/" + record.get(
@@ -133,8 +130,7 @@ def get_blobs_for_revision_files(record, revision_files, authorized_headers):
         print(e)
 
 
-def request_upload_urls_for_blobs(record, blobs, authorized_headers):
-
+def request_upload_urls_for_blobs(API_BASE, record, blobs, authorized_headers):
     # Generte file lists, including
     # filename, size, and sha256
 
@@ -196,34 +192,33 @@ def upload_files(filepaths, revision_files, blobs, upload_urls):
                 print("Finished uploading " + filepaths[i])
 
 
-def create_record_and_upload_files(BEARER_TOKEN, WAREHOUSE_ID, PROJECT_ID,
+def create_record_and_upload_files(API_BASE, BEARER_TOKEN, WAREHOUSE_ID, PROJECT_ID,
                                    record_name, filepaths):
-
     # 1. 获取您的 BEARER Token, Warehouse ID 和 Project ID
     print("Start creating records for Projects " + PROJECT_ID)
 
     authorized_headers = get_authorized_headers(BEARER_TOKEN)
 
     # 2. 为即将上传的文件创建记录
-    record = create_record(WAREHOUSE_ID, PROJECT_ID, authorized_headers,
+    record = create_record(API_BASE, WAREHOUSE_ID, PROJECT_ID, authorized_headers,
                            record_name)
 
     # 3. 在刚创建的记录上，声明文件清单，创建一个新的版本
     # TODO, this only works for one file, still figuring out how to do multiple file batch get blob
     revision = generate_new_revision_for_record_with_files(
-        record, filepaths, authorized_headers)
+        API_BASE, record, filepaths, authorized_headers)
 
     # 4. 从新建的版本中获取文件信息，找到这些文件的 Blob 信息
     revision_files = list(
         filter(lambda file: file.get("filename") != ".cos/config.json",
                revision.get("files")))
 
-    blobs = get_blobs_for_revision_files(record, revision_files,
+    blobs = get_blobs_for_revision_files(API_BASE, record, revision_files,
                                          authorized_headers)
 
     # 5. 为拿到的 Blobs 获取上传链接，进行上传
 
-    upload_urls = request_upload_urls_for_blobs(record, blobs,
+    upload_urls = request_upload_urls_for_blobs(API_BASE, record, blobs,
                                                 authorized_headers)
 
     # 6. 上传文件
