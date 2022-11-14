@@ -67,17 +67,15 @@ class ApiClient:
         )
 
     def get_blobs(self, record, blob_names):
-        url = "{api_base}/dataplatform/v1alpha2/{record_name}/blobs:batchGet".format(
+        url = "{api_base}/dataplatform/v1alpha2/{record_name}/blobs:customizedBatchGet".format(
             api_base=self.api_base,
             record_name=record.get("name")
         )
 
         try:
-            response = requests.get(
+            response = requests.post(
                 url=url,
-                params={
-                    "requests.name": ",".join(blob_names)
-                },
+                json={"blobs": blob_names},
                 headers=self.authorized_headers,
             )
 
@@ -175,5 +173,7 @@ if __name__ == "__main__":
     main([
         "--bearer-token",
         os.getenv("BEARER_TOKEN"),
-        "./samples/3.jpg"
+        "./samples/2.jpg",
+        "./samples/3.jpg",
+        "./samples/nihon.jpg"
     ])
