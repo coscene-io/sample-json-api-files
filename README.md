@@ -18,3 +18,8 @@ Replace these info in the beginning of the file:
 - bearer toke
 - warehouse id
 - project id
+
+## Run
+```shell
+    python cos.py --bearer-token <YOUR_BEARER_TOKEN> ./samples/3.jpg
+```

@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import argparse
 import hashlib
 import os
 
@@ -151,3 +152,28 @@ class ApiClient:
                 self.upload_file(f.get('filepath'), upload_urls.get(blob_name))
 
         print("Done")
+
+
+def main(args=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--server-url', type=str, default='https://api.coscene.cn')
+    parser.add_argument('--warehouse', type=str, default='7ab79a38-49fb-4411-8f1b-dff4ae95b0e5')
+    parser.add_argument('--project', type=str, default='8793e727-5ed9-4403-98a3-58906a975e55')
+    parser.add_argument('--title', type=str, default="Test Record")
+    parser.add_argument('--description', type=str)
+    parser.add_argument('--base-dir', type=str, default=".")
+    parser.add_argument('--bearer-token', type=str)
+    parser.add_argument('files', nargs='*', help='files or directory')
+    args = parser.parse_args(args)
+
+    # 0. 初始化您的 BEARER Token, Warehouse ID 和 Project ID
+    api = ApiClient(args.server_url, args.bearer_token, args.warehouse, args.project)
+    api.create_record_and_upload_files(args.title, args.files)
+
+
+if __name__ == "__main__":
+    main([
+        "--bearer-token",
+        os.getenv("BEARER_TOKEN"),
+        "./samples/3.jpg"
+    ])
