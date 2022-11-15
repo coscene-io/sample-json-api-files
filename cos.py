@@ -7,21 +7,44 @@ import requests
 
 
 class ApiClient:
-    def __init__(self, api_base, bearer_token, warehouse_id, project_id):
+    def __init__(self, api_base, bearer_token, project_full_slug, warehouse_id, project_id):
+        """
+
+        :rtype: 返回的将是可以即时调用的ApiClient
+        """
         self.api_base = api_base
+
+        # 如果输入的token是后半截，会自动加上"Bearer "的前缀
+        if not bearer_token.startswith("Bearer"):
+            bearer_token = "Bearer " + bearer_token
         self.authorized_headers = {
-            "Authorization": "Bearer " + bearer_token,
+            "Authorization": bearer_token,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
-        self.warehouse_id = warehouse_id
-        self.project_id = project_id
+
+        # 你可以分开输入 <warehouse_uuid> and <project_uuid>
+        # 你也可以输入项目的slug（代币的意思）<warehouse_slug>/project_slug>, 例如 default/data_project
+        # 以下代码会查询服务器，取得对应的 uuid,
+        # 最终API调用的是project name，正则名，将会是 warehouses/<warehouse_uuid>/projects/<project_uuid>
+        # 例如 warehouses/7ab79a38-49fb-4411-8f1b-dff4ae95b0e5/projects/8793e727-5ed9-4403-98a3-58906a975e55
+        self.project_name = (
+            self.project_slug_to_name(project_full_slug)
+            if project_full_slug else
+            self._make_project_name(warehouse_id, project_id)
+        )
 
     def create_record(self, file_infos, title="Default Test Name", description=""):
-        url = "{api_base}/dataplatform/v1alpha2/warehouses/{warehouse}/projects/{project}/records".format(
+        """
+
+        :param file_infos: 文件信息，是用make_file_info函数生成
+        :param title: 记录的现实title
+        :param description: 记录的描述
+        :return: 创建的新记录，以json形式呈现
+        """
+        url = "{api_base}/dataplatform/v1alpha2/{parent}/records".format(
             api_base=self.api_base,
-            warehouse=self.warehouse_id,
-            project=self.project_id
+            parent=self.project_name
         )
         payload = {
             "title": title,
@@ -42,11 +65,111 @@ class ApiClient:
             print("Successfully created the record " + result.get("name"))
             return result
 
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as e:
+            print(e)
             raise Exception("Create Record failed")
 
+    def _convert_project_slug(self, warehouse_id, proj_slug):
+        """
+
+        :param warehouse_id: 数据仓库的uuid
+        :param proj_slug: 项目的单个slug，例如 data_project（不带warehouse部份）
+        :return: 项目的正则名
+        """
+        name_mixin_slug = "warehouses/{warehouse_id}/projects/{proj_slug}".format(
+            warehouse_id=warehouse_id,
+            proj_slug=proj_slug
+        )
+        url = "{api_base}/dataplatform/v1alpha1/{name}:convertProjectSlug".format(
+            api_base=self.api_base,
+            name=name_mixin_slug
+        )
+
+        try:
+            response = requests.post(
+                url=url,
+                json={"project": name_mixin_slug},
+                headers=self.authorized_headers,
+            )
+            if response.status_code == 401:
+                raise Exception("Unauthorized")
+
+            result = response.json()
+            print("The project name for {slug} is {name}".format(
+                slug=proj_slug,
+                name=result.get("project")
+            ))
+            return result.get('project')
+
+        except requests.exceptions.RequestException as e:
+            print(e)
+            raise Exception("Convert Project Slug failed")
+
+    def _convert_warehouse_slug(self, wh_slug):
+        """
+
+        :param wh_slug: 数仓的slug
+        :return: 数仓的正则名
+        """
+        name_mixin_slug = "warehouses/" + wh_slug
+        url = "{api_base}/dataplatform/v1alpha1/{name}:convertWarehouseSlug".format(
+            api_base=self.api_base,
+            name=name_mixin_slug,
+        )
+
+        try:
+            response = requests.post(
+                url=url,
+                json={"warehouse": name_mixin_slug},
+                headers=self.authorized_headers,
+            )
+            if response.status_code == 401:
+                raise Exception("Unauthorized")
+
+            result = response.json()
+            print("The warehouse name for {slug} is {name}".format(
+                slug=wh_slug,
+                name=result.get("warehouse")
+            ))
+            return result.get('warehouse')
+
+        except requests.exceptions.RequestException as e:
+            print(e)
+            raise Exception("Convert Warehouse Slug failed")
+
+    def project_slug_to_name(self, project_full_slug):
+        """
+
+        :param project_full_slug: 项目的slug（代币的意思）<warehouse_slug>/project_slug>, 例如 default/data_project
+        :return: 项目的正则名，例如
+            warehouses/7ab79a38-49fb-4411-8f1b-dff4ae95b0e5/projects/8793e727-5ed9-4403-98a3-58906a975e55
+        """
+        wh_slug, proj_slug = project_full_slug.split('/')
+        warehouse_id = self._convert_warehouse_slug(wh_slug).split('/')[1]
+        project_id = self._convert_project_slug(warehouse_id, proj_slug).split('/')[3]
+        return self._make_project_name(warehouse_id, project_id)
+
     @staticmethod
-    def make_file_info(filepath):
+    def _make_project_name(warehouse_id, project_id):
+        """
+
+        :param warehouse_id: 数仓的uuid
+        :param project_id: 项目的uuid
+        :return: 数仓的正则名，例如
+            warehouses/7ab79a38-49fb-4411-8f1b-dff4ae95b0e5/projects/8793e727-5ed9-4403-98a3-58906a975e55
+        """
+        return "warehouses/{warehouse_id}/projects/{project_id}".format(
+            warehouse_id=warehouse_id,
+            project_id=project_id
+        )
+
+    @staticmethod
+    def _make_file_info(filepath):
+        """
+
+        :param filepath: 文件路径
+        :return: 最终文件名，sha256，大小以及输入的路径组成的json
+        """
         sha256_hash = hashlib.sha256()
         with open(filepath, "rb") as f:
             for byte_block in iter(lambda: f.read(4096), b""):
@@ -60,13 +183,19 @@ class ApiClient:
             }
 
     @staticmethod
-    def make_blob_name(record, file_info):
+    def _make_blob_name(record, file_info):
         return "{record_name}/blobs/{sha256}".format(
             record_name=record.get("name"),
             sha256=file_info.get("sha256")
         )
 
     def get_blobs(self, record, blob_names):
+        """
+
+        :param record: 记录json
+        :param blob_names: 获取的blob名字
+        :return: 获取一列blob，包括他们的状态信息
+        """
         url = "{api_base}/dataplatform/v1alpha2/{record_name}/blobs:customizedBatchGet".format(
             api_base=self.api_base,
             record_name=record.get("name")
@@ -83,10 +212,16 @@ class ApiClient:
             return response.json().get("blobs")
 
         except requests.exceptions.RequestException as e:
-            print("Getting blobs failed")
             print(e)
+            raise Exception("Getting blobs failed")
 
     def generate_upload_urls(self, record, blobs):
+        """
+
+        :param record: 记录json
+        :param blobs: 需要生成记录的文档
+        :return:
+        """
         url = "{api_base}/dataplatform/v1alpha2/{record_name}:batchGenerateUploadUrls".format(
             api_base=self.api_base,
             record_name=record.get("name")
@@ -112,11 +247,16 @@ class ApiClient:
             return upload_urls.get("preSignedUrls")
 
         except requests.exceptions.RequestException as e:
-            print("Request upload urls failed")
             print(e)
+            raise Exception("Request upload urls failed")
 
     @staticmethod
     def upload_file(filepath, upload_url):
+        """
+
+        :param filepath: 需要上传文件的本地路径
+        :param upload_url: 上传用的预签名url
+        """
         with open(filepath, 'rb') as f:
             print("Start uploading " + filepath)
             response = requests.put(upload_url, data=f)
@@ -124,17 +264,22 @@ class ApiClient:
             print("Finished uploading " + filepath)
 
     def create_record_and_upload_files(self, title, filepaths):
-        print("Start creating records for Project " + self.project_id)
+        """
+
+        :param title: 记录的标题
+        :param filepaths: 需要上传的本地文件清单
+        """
+        print("Start creating records for Project " + self.project_name)
 
         # 1. 计算sha256，生成文件清单
-        file_infos = [self.make_file_info(path) for path in filepaths]
+        file_infos = [self._make_file_info(path) for path in filepaths]
 
         # 2. 为即将上传的文件创建记录
         record = self.create_record(file_infos, title)
 
         # 3. 去掉已经上传过的文件
         blobs = self.get_blobs(record, [
-            self.make_blob_name(record, f) for f in file_infos
+            self._make_blob_name(record, f) for f in file_infos
         ])
 
         # 4. 为拿到的 Blobs 获取上传链接，已存在的Blob将被过滤
@@ -145,7 +290,7 @@ class ApiClient:
 
         # 5. 上传文件
         for f in file_infos:
-            blob_name = self.make_blob_name(record, f)
+            blob_name = self._make_blob_name(record, f)
             if blob_name in upload_urls:
                 self.upload_file(f.get('filepath'), upload_urls.get(blob_name))
 
@@ -157,6 +302,7 @@ def main(args=None):
     parser.add_argument('--server-url', type=str, default='https://api.coscene.cn')
     parser.add_argument('--warehouse', type=str, default='7ab79a38-49fb-4411-8f1b-dff4ae95b0e5')
     parser.add_argument('--project', type=str, default='8793e727-5ed9-4403-98a3-58906a975e55')
+    parser.add_argument('--project_slug', type=str)
     parser.add_argument('--title', type=str, default="Test Record")
     parser.add_argument('--description', type=str)
     parser.add_argument('--base-dir', type=str, default=".")
@@ -165,7 +311,7 @@ def main(args=None):
     args = parser.parse_args(args)
 
     # 0. 初始化您的 BEARER Token, Warehouse ID 和 Project ID
-    api = ApiClient(args.server_url, args.bearer_token, args.warehouse, args.project)
+    api = ApiClient(args.server_url, args.bearer_token, args.project_slug, args.warehouse, args.project)
     api.create_record_and_upload_files(args.title, args.files)
 
 
