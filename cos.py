@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from ConfigParser import ConfigParser
 import argparse
 import hashlib
 import os
@@ -297,18 +298,49 @@ class ApiClient:
         print("Done")
 
 
+class ConfigManager:
+    def __init__(self, config_file, profile='default'):
+        self.config_file = os.path.expanduser(config_file)
+        self.profile = profile
+        self.parser = ConfigParser()
+        # if not os.path.exists(config_file):
+        #     self.parser.add_section(self.profile)
+        #     self.save()
+        self.load()
+
+    def get(self, key):
+        return self.parser.get(self.profile, key)
+
+    def set(self, key, value):
+        self.parser.set(self.profile, key, value)
+
+    def load(self):
+        self.parser.read(self.config_file)
+
+    def save(self):
+        with open(self.config_file) as f:
+            self.parser.write(f)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--server-url', type=str, default='https://api.coscene.cn')
-    parser.add_argument('--warehouse', type=str, default='7ab79a38-49fb-4411-8f1b-dff4ae95b0e5')
-    parser.add_argument('--project', type=str, default='8793e727-5ed9-4403-98a3-58906a975e55')
-    parser.add_argument('--project_slug', type=str)
+    parser.add_argument('--warehouse', type=str)
+    parser.add_argument('--project', type=str)
+    parser.add_argument('--project-slug', type=str)
     parser.add_argument('--title', type=str, default="Test Record")
     parser.add_argument('--description', type=str)
     parser.add_argument('--base-dir', type=str, default=".")
     parser.add_argument('--bearer-token', type=str)
+    parser.add_argument('-c', '--config', type=str, default='~/.upload.ini')
     parser.add_argument('files', nargs='*', help='files or directory')
     args = parser.parse_args()
+
+    cm = ConfigManager(config_file=args.config)
+    args.server_url = args.server_url or cm.get("server_url")
+    args.bearer_token = args.bearer_token or cm.get("bearer_token")
+    args.warehouse = args.warehouse or cm.get("warehouse")
+    args.project = args.project or cm.get("project")
 
     # 0. 初始化您的 BEARER Token, Warehouse ID 和 Project ID
     api = ApiClient(args.server_url, args.bearer_token, args.project_slug, args.warehouse, args.project)
