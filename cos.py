@@ -297,7 +297,7 @@ class ApiClient:
         print("Done")
 
 
-def main(args=None):
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--server-url', type=str, default='https://api.coscene.cn')
     parser.add_argument('--warehouse', type=str, default='7ab79a38-49fb-4411-8f1b-dff4ae95b0e5')
@@ -308,7 +308,7 @@ def main(args=None):
     parser.add_argument('--base-dir', type=str, default=".")
     parser.add_argument('--bearer-token', type=str)
     parser.add_argument('files', nargs='*', help='files or directory')
-    args = parser.parse_args(args)
+    args = parser.parse_args()
 
     # 0. 初始化您的 BEARER Token, Warehouse ID 和 Project ID
     api = ApiClient(args.server_url, args.bearer_token, args.project_slug, args.warehouse, args.project)
@@ -316,10 +316,4 @@ def main(args=None):
 
 
 if __name__ == "__main__":
-    main([
-        "--bearer-token",
-        os.getenv("BEARER_TOKEN"),
-        "./samples/2.jpg",
-        "./samples/3.jpg",
-        "./samples/nihon.jpg"
-    ])
+    main()
