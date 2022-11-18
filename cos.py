@@ -8,7 +8,7 @@ import requests
 
 
 class ApiClient:
-    def __init__(self, api_base, bearer_token, project_full_slug, warehouse_id, project_id):
+    def __init__(self, api_base, bearer_token, project_full_slug):
         """
 
         :rtype: 返回的将是可以即时调用的ApiClient
@@ -29,11 +29,7 @@ class ApiClient:
         # 以下代码会查询服务器，取得对应的 uuid,
         # 最终API调用的是project name，正则名，将会是 warehouses/<warehouse_uuid>/projects/<project_uuid>
         # 例如 warehouses/7ab79a38-49fb-4411-8f1b-dff4ae95b0e5/projects/8793e727-5ed9-4403-98a3-58906a975e55
-        self.project_name = (
-            self.project_slug_to_name(project_full_slug)
-            if project_full_slug else
-            self._make_project_name(warehouse_id, project_id)
-        )
+        self.project_name = self.project_slug_to_name(project_full_slug)
 
     def create_record(self, file_infos, title="Default Test Name", description=""):
         """
@@ -148,17 +144,6 @@ class ApiClient:
         wh_slug, proj_slug = project_full_slug.split('/')
         warehouse_id = self._convert_warehouse_slug(wh_slug).split('/')[1]
         project_id = self._convert_project_slug(warehouse_id, proj_slug).split('/')[3]
-        return self._make_project_name(warehouse_id, project_id)
-
-    @staticmethod
-    def _make_project_name(warehouse_id, project_id):
-        """
-
-        :param warehouse_id: 数仓的uuid
-        :param project_id: 项目的uuid
-        :return: 数仓的正则名，例如
-            warehouses/7ab79a38-49fb-4411-8f1b-dff4ae95b0e5/projects/8793e727-5ed9-4403-98a3-58906a975e55
-        """
         return "warehouses/{warehouse_id}/projects/{project_id}".format(
             warehouse_id=warehouse_id,
             project_id=project_id
@@ -303,15 +288,14 @@ class ConfigManager:
         self.config_file = os.path.expanduser(config_file)
         self.profile = profile
         self.parser = ConfigParser()
-        # if not os.path.exists(config_file):
-        #     self.parser.add_section(self.profile)
-        #     self.save()
         self.load()
 
     def get(self, key):
-        return self.parser.get(self.profile, key)
+        return self.parser.has_option(self.profile, key) and self.parser.get(self.profile, key) or None
 
     def set(self, key, value):
+        if not self.parser.has_section(self.profile):
+            self.parser.add_section(self.profile)
         self.parser.set(self.profile, key, value)
 
     def load(self):
@@ -324,26 +308,23 @@ class ConfigManager:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--server-url', type=str, default='https://api.coscene.cn')
-    parser.add_argument('--warehouse', type=str)
-    parser.add_argument('--project', type=str)
-    parser.add_argument('--project-slug', type=str)
-    parser.add_argument('--title', type=str, default="Test Record")
-    parser.add_argument('--description', type=str)
+    parser.add_argument('--server-url', type=str)
+    parser.add_argument('-p', '--project-slug', type=str)
+    parser.add_argument('-t', '--title', type=str, default="Test Record")
+    parser.add_argument('-d', '--description', type=str)
     parser.add_argument('--base-dir', type=str, default=".")
     parser.add_argument('--bearer-token', type=str)
-    parser.add_argument('-c', '--config', type=str, default='~/.upload.ini')
+    parser.add_argument('-c', '--config', type=str, default='~/.cos.ini')
     parser.add_argument('files', nargs='*', help='files or directory')
     args = parser.parse_args()
 
     cm = ConfigManager(config_file=args.config)
     args.server_url = args.server_url or cm.get("server_url")
     args.bearer_token = args.bearer_token or cm.get("bearer_token")
-    args.warehouse = args.warehouse or cm.get("warehouse")
-    args.project = args.project or cm.get("project")
+    args.project_slug = args.project_slug or cm.get("project_slug")
 
     # 0. 初始化您的 BEARER Token, Warehouse ID 和 Project ID
-    api = ApiClient(args.server_url, args.bearer_token, args.project_slug, args.warehouse, args.project)
+    api = ApiClient(args.server_url, args.bearer_token, args.project_slug)
     api.create_record_and_upload_files(args.title, args.files)
 
 
