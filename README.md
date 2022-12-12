@@ -25,11 +25,13 @@ api_key = <API_KEY>
 ```
 替换上面带尖括号的里的内容
 
-从地址栏获得slug
+### 从地址栏获得slug
 ![find slug](img/slug.png)
 
-从 coscene 网页右上角 点击头像 -> 设置 -> 安全 里生成一个对应的 apikey 使用
-![bearer_token](img/token.png)
+### 从 coscene 网页右上角 点击头像 -> 设置 -> 安全 里生成一个对应的 apikey 使用
+![token1](img/token1.png)
+![token2](img/token2.png)
+![token3](img/token3.png)
 
 ## Run
 ```shell

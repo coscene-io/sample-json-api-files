@@ -2,9 +2,1214 @@
   "openapi": "3.0.3",
   "info": {
     "title": "CoScene OpenAPI",
-    "version": "v20221112-d30039e"
+    "description": "Coscene OpenAPI",
+    "version": "v20221209-3fed49a-dirty"
   },
   "paths": {
+    "/dataplatform/v1alpha1/users/{user}/projects": {
+      "get": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "List the user's projects.",
+        "operationId": "ProjectService_ListUserProjects",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "description": "The user id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Requested page size. Server may return fewer than requested. If unspecified, at most 20 users will be returned.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "description": "A token identifying a page of results the server should return.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "description": "The skip value refer to the number of individual resources to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "An expression for filtering the results of the request. The default returned list contains both archived and unarchived data. You can query the unarchived data by set param: is_archived=false, example: filter=is_archived=false. You can query the archived data by set param: is_archived=true, example: filter=is_archived=true.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "description": "An expression for sorting the results of the request.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListUserProjectsResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses": {
+      "get": {
+        "tags": [
+          "WarehouseService"
+        ],
+        "description": "List warehouses.",
+        "operationId": "WarehouseService_ListWarehouses",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Requested page size. Server may return fewer than requested. If unspecified, at most 20 warehouses will be returned.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "description": "A token identifying a page of results the server should return.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "description": "The skip value refer to the number of individual resources to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "An expression for filtering the results of the request.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "description": "An expression for sorting the results of the request.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListWarehousesResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "WarehouseService"
+        ],
+        "description": "Create a warehouse.",
+        "operationId": "WarehouseService_CreateWarehouse",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Warehouse"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Warehouse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}": {
+      "get": {
+        "tags": [
+          "WarehouseService"
+        ],
+        "description": "Retrieve a warehouse.",
+        "operationId": "WarehouseService_GetWarehouse",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Warehouse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "WarehouseService"
+        ],
+        "description": "Update a warehouse.",
+        "operationId": "WarehouseService_UpdateWarehouse",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "updateMask",
+            "in": "query",
+            "description": "The fields to update.",
+            "schema": {
+              "type": "string",
+              "format": "field-mask"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Warehouse"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Warehouse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects": {
+      "get": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "List projects.",
+        "operationId": "ProjectService_ListProjects",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Requested page size. Server may return fewer than requested. If unspecified, at most 20 projects will be returned.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "description": "A token identifying a page of results the server should return.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "description": "The skip value refer to the number of individual resources to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "An expression for filtering the results of the request. The default returned list contains both archived and unarchived data. You can query the unarchived data by set param: is_archived=false, example: filter=is_archived=false. You can query the archived data by set param: is_archived=true, example: filter=is_archived=true.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "description": "An expression for sorting the results of the request.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListProjectsResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "Create a project.",
+        "operationId": "ProjectService_CreateProject",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Project"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects/{project}": {
+      "get": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "Retrieve a project.",
+        "operationId": "ProjectService_GetProject",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "Delete a project.",
+        "operationId": "ProjectService_DeleteProject",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "Update a project.",
+        "operationId": "ProjectService_UpdateProject",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "updateMask",
+            "in": "query",
+            "description": "The fields to update.",
+            "schema": {
+              "type": "string",
+              "format": "field-mask"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Project"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects/{project}/visibility:change": {
+      "post": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "change project visibility",
+        "operationId": "ProjectService_ChangeProjectVisibility",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeProjectVisibilityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects/{project}:archive": {
+      "post": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "Archive project.",
+        "operationId": "ProjectService_ArchiveProject",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveProjectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects/{project}:bindDevices": {
+      "post": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "bind devices to project. It's a append-like operation",
+        "operationId": "ProjectService_BindDevices",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindDevicesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects/{project}:checkPermission": {
+      "post": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "check user permission on project.",
+        "operationId": "ProjectService_CheckPermission",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckPermissionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckPermissionResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects/{project}:convertProjectSlug": {
+      "post": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "convert the slug of the project to id name.",
+        "operationId": "ProjectService_ConvertProjectSlug",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConvertProjectSlugRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConvertProjectSlugResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects/{project}:stat": {
+      "post": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "statistic a project.",
+        "operationId": "ProjectService_StatProject",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatProjectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatProjectResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects/{project}:unarchive": {
+      "post": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "Unarchive project.",
+        "operationId": "ProjectService_UnarchiveProject",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnarchiveProjectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects/{project}:unbindDevices": {
+      "post": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "unbind devices from project. It's a append-like operation",
+        "operationId": "ProjectService_UnbindDevices",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnbindDevicesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}/projects:verifyProjectSlug": {
+      "post": {
+        "tags": [
+          "ProjectService"
+        ],
+        "description": "verify the project slug if exists.\n (-- api-linter: core::0136::http-parent-variable=disabled\n     aip.dev/not-precedent: We need to do this because reasons. --)",
+        "operationId": "ProjectService_VerifyProjectSlug",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyProjectSlugRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyProjectSlugResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses/{warehouse}:convertWarehouseSlug": {
+      "post": {
+        "tags": [
+          "WarehouseService"
+        ],
+        "description": "convert the slug of the warehouse to id",
+        "operationId": "WarehouseService_ConvertWarehouseSlug",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConvertWarehouseSlugRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConvertWarehouseSlugResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha1/warehouses:verifyWarehouseSlug": {
+      "post": {
+        "tags": [
+          "WarehouseService"
+        ],
+        "description": "verify the slug if exists.",
+        "operationId": "WarehouseService_VerifyWarehouseSlug",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyWarehouseSlugRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyWarehouseSlugResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/dataplatform/v1alpha2/devices": {
       "get": {
         "tags": [
@@ -272,89 +1477,6 @@
         }
       }
     },
-    "/dataplatform/v1alpha2/records": {
-      "get": {
-        "tags": [
-          "RecordService"
-        ],
-        "description": "List records.",
-        "operationId": "RecordService_ListRecords",
-        "parameters": [
-          {
-            "name": "parent",
-            "in": "query",
-            "description": "The parent to list records from. If it's empty, it means to list all records from all warehouses in the organization.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "description": "Requested page size. Server may return fewer than requested. If unspecified, at most 20 records will be returned.",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "pageToken",
-            "in": "query",
-            "description": "A token identifying a page of results the server should return.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "skip",
-            "in": "query",
-            "description": "The skip value refer to the number of individual resources to skip.",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "filter",
-            "in": "query",
-            "description": "An expression for filtering the results of the request. camel or lower_underscore both supported supported fields: title, description, createTime, updateTime, warehouseId, projectId, deviceId, metadata->${key}, head, startTime, endTime album.id, event.id support json fields to use or condition query: labels. Example: labels=[label_id_1,label_id_2,...]",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "orderBy",
-            "in": "query",
-            "description": "An expression for sorting the results of the request. camel or lower_underscore both supported supported fields are same as filter's",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListRecordsResponse"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Default error response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Status"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/dataplatform/v1alpha2/warehouses/{warehouse}/*/tasks": {
       "get": {
         "tags": [
@@ -422,6 +1544,90 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ListTasksResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha2/warehouses/{warehouse}/blobs": {
+      "get": {
+        "tags": [
+          "BlobService"
+        ],
+        "description": "List blobs, temporary for blobs media migration.",
+        "operationId": "BlobService_ListBlobs",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Requested page size. Server may return fewer than requested. If unspecified, at most 20 blobs will be returned.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "description": "A token identifying a page of results the server should return.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "description": "The skip value refer to the number of individual resources to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "An expression for filtering the results of the request.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "description": "An expression for sorting the results of the request. camel or lower_underscore both supported supported fields are same as filter's",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListBlobsResponse"
                 }
               }
             }
@@ -844,6 +2050,97 @@
       }
     },
     "/dataplatform/v1alpha2/warehouses/{warehouse}/projects/{project}/records": {
+      "get": {
+        "tags": [
+          "RecordService"
+        ],
+        "description": "List records.",
+        "operationId": "RecordService_ListRecords",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Requested page size. Server may return fewer than requested. If unspecified, at most 20 records will be returned.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "description": "A token identifying a page of results the server should return.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "description": "The skip value refer to the number of individual resources to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "An expression for filtering the results of the request. camel or lower_underscore both supported supported fields: title, description, createTime, updateTime, warehouseId, projectId, deviceId, metadata->${key}, head, startTime, endTime album.id, event.id support json fields to use or condition query: labels. Example: labels=[label_id_1,label_id_2,...]",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "description": "An expression for sorting the results of the request. camel or lower_underscore both supported supported fields are same as filter's",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListRecordsResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "RecordService"
@@ -1527,6 +2824,76 @@
         }
       }
     },
+    "/dataplatform/v1alpha2/warehouses/{warehouse}/projects/{project}/records/{record}/blobs:customizedBatchGet": {
+      "post": {
+        "tags": [
+          "BlobService"
+        ],
+        "description": "Customized batch get blobs under parent. It's a duplicate for #BatchGetBlobs because grpc-transcoder can't support\n `requests.name`.\n (-- api-linter: core::0136::http-uri-suffix=disabled\n     aip.dev/not-precedent: good enough to go. --)",
+        "operationId": "BlobService_CustomizedBatchGetBlobs",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "record",
+            "in": "path",
+            "description": "The record id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomizedBatchGetBlobsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomizedBatchGetBlobsResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/dataplatform/v1alpha2/warehouses/{warehouse}/projects/{project}/records/{record}/files": {
       "get": {
         "tags": [
@@ -1813,6 +3180,158 @@
           "200": {
             "description": "OK",
             "content": {}
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha2/warehouses/{warehouse}/projects/{project}/records/{record}/files/{file}/media:refresh": {
+      "post": {
+        "tags": [
+          "FileService"
+        ],
+        "description": "Update media type and media for a file.",
+        "operationId": "FileService_RefreshFileMedia",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "record",
+            "in": "path",
+            "description": "The record id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file",
+            "in": "path",
+            "description": "The file id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshFileMediaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dataplatform/v1alpha2/warehouses/{warehouse}/projects/{project}/records/{record}/files/{file}:generateFileDownloadUrl": {
+      "post": {
+        "tags": [
+          "FileService"
+        ],
+        "description": "Generate pre-signed URL to download file.",
+        "operationId": "FileService_GenerateFileDownloadUrl",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "record",
+            "in": "path",
+            "description": "The record id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file",
+            "in": "path",
+            "description": "The file id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateFileDownloadUrlRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateFileDownloadUrlResponse"
+                }
+              }
+            }
           },
           "default": {
             "description": "Default error response",
@@ -2508,6 +4027,76 @@
         }
       }
     },
+    "/dataplatform/v1alpha2/warehouses/{warehouse}/projects/{project}/records/{record}:generateUploadUrls": {
+      "post": {
+        "tags": [
+          "FileService"
+        ],
+        "description": "Generate pre-signed URL to upload file(s).\n (-- api-linter: core::0136::http-parent-variable=disabled\n     aip.dev/not-precedent: Need `parent` technically. --)",
+        "operationId": "FileService_GenerateUploadUrls",
+        "parameters": [
+          {
+            "name": "warehouse",
+            "in": "path",
+            "description": "The warehouse id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "description": "The project id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "record",
+            "in": "path",
+            "description": "The record id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateUploadUrlsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateUploadUrlsResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/dataplatform/v1alpha2/warehouses/{warehouse}/projects/{project}/records:batchArchive": {
       "post": {
         "tags": [
@@ -3114,6 +4703,12 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    },
     "schemas": {
       "AWSElasticBlockStoreVolumeSource": {
         "type": "object",
@@ -3161,6 +4756,19 @@
           }
         },
         "description": "Amount represent a numeric amount. +kubebuilder:validation:Type=number"
+      },
+      "ArchiveProjectRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the project to archive. Format: warehouses/{warehouse}/projects/{project}"
+          }
+        },
+        "description": "Request message for ArchiveProject"
       },
       "ArchiveStrategy": {
         "type": "object",
@@ -3634,6 +5242,27 @@
         },
         "description": "Request message for BatchUnarchiveRecords."
       },
+      "BindDevicesRequest": {
+        "required": [
+          "project",
+          "devices"
+        ],
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "The project to bind devices."
+          },
+          "devices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The devices(resource name) to bind."
+          }
+        },
+        "description": "The request for BindDevices"
+      },
       "Blob": {
         "required": [
           "sha256",
@@ -3765,6 +5394,67 @@
           }
         },
         "description": "Represents a Ceph Filesystem mount that lasts the lifetime of a pod Cephfs volumes do not support ownership management or SELinux relabeling."
+      },
+      "ChangeProjectVisibilityRequest": {
+        "required": [
+          "project",
+          "visibility"
+        ],
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "The project to update visibility."
+          },
+          "visibility": {
+            "enum": [
+              "PROJECT_VISIBILITY_UNSPECIFIED",
+              "PRIVATE",
+              "INTERNAL"
+            ],
+            "type": "string",
+            "description": "The project visibility to update.",
+            "format": "enum"
+          }
+        },
+        "description": "Request message for change project visibility."
+      },
+      "CheckPermissionRequest": {
+        "required": [
+          "project"
+        ],
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "The project to check permission."
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "actions to be granted. '*' means all actions. Format:  coscene.dataplatform.v1alpha1.Service.{service}.{action}"
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "resources to be granted. '*' means all resources. Format:  coscene.dataplatform.v1alpha1.Resource.{resource}"
+          }
+        },
+        "description": "Request message for CheckPermissionRequest"
+      },
+      "CheckPermissionResponse": {
+        "type": "object",
+        "properties": {
+          "allowed": {
+            "type": "boolean",
+            "description": "the permission of the user."
+          }
+        },
+        "description": "Response message for CheckPermissionResponse"
       },
       "CinderVolumeSource": {
         "type": "object",
@@ -4125,7 +5815,7 @@
         "properties": {
           "duration": {
             "type": "string",
-            "description": "Duration is the time between each retry, examples values are \"300ms\", \"1s\" or \"5m\". Valid time units are \"ns\", \"us\" (or \"Âµs\"), \"ms\", \"s\", \"m\", \"h\"."
+            "description": "Duration is the time between each retry, examples values are \"300ms\", \"1s\" or \"5m\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\"."
           },
           "retries": {
             "$ref": "#/components/schemas/IntOrString"
@@ -4165,6 +5855,49 @@
           }
         },
         "description": "ContinueOn defines if a workflow should continue even if a task or step fails/errors. It can be specified if the workflow should continue when the pod errors, fails or both."
+      },
+      "ConvertProjectSlugRequest": {
+        "required": [
+          "project"
+        ],
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "the project name with slug"
+          }
+        },
+        "description": "Request for ConvertProjectSlug."
+      },
+      "ConvertProjectSlugResponse": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "the project name with id"
+          }
+        },
+        "description": "Response for ConvertProjectSlug."
+      },
+      "ConvertWarehouseSlugRequest": {
+        "type": "object",
+        "properties": {
+          "warehouse": {
+            "type": "string",
+            "description": "the warehouse name with slug"
+          }
+        },
+        "description": "Request for ConvertWarehouseSlug."
+      },
+      "ConvertWarehouseSlugResponse": {
+        "type": "object",
+        "properties": {
+          "warehouse": {
+            "type": "string",
+            "description": "the warehouse name with id"
+          }
+        },
+        "description": "Response for ConvertWarehouseSlug."
       },
       "CopyRecordsRequest": {
         "required": [
@@ -4235,6 +5968,40 @@
           }
         },
         "description": "CreateS3BucketOptions options used to determine automatic automatic bucket-creation process"
+      },
+      "CustomizedBatchGetBlobsRequest": {
+        "required": [
+          "parent",
+          "blobs"
+        ],
+        "type": "object",
+        "properties": {
+          "parent": {
+            "type": "string",
+            "description": "The blobs' parent to batch get from. If this is set, the parent field in the `requests` must either be empty or match this field. Only support warehouse id instead of slug."
+          },
+          "blobs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The request message specifying the resources to create. A maximum of `100` files can be got in a batch."
+          }
+        },
+        "description": "Request message for `CustomizedBatchGetBlob`."
+      },
+      "CustomizedBatchGetBlobsResponse": {
+        "type": "object",
+        "properties": {
+          "blobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Blob"
+            },
+            "description": "The blobs which were retrieved."
+          }
+        },
+        "description": "Response message for `CustomizedBatchGetBlob`."
       },
       "DAGTask": {
         "type": "object",
@@ -4730,7 +6497,16 @@
             "description": "associated revision. It should be ALWAYS the revision before the current revision client to create given by server."
           },
           "type": {
-            "type": "integer",
+            "enum": [
+              "TRANSFORMATION_TYPE_UNSPECIFIED",
+              "NO_CHANGE",
+              "CREATE",
+              "DELETE",
+              "RENAME",
+              "COPY",
+              "DERIVE"
+            ],
+            "type": "string",
             "description": "The transform type.",
             "format": "enum"
           },
@@ -4933,7 +6709,30 @@
             "description": "The blob pre-signed URL."
           }
         },
-        "description": "Response message for `GenerateUploadUrl`."
+        "description": "Response message for `GenerateDownloadUrl`."
+      },
+      "GenerateFileDownloadUrlRequest": {
+        "required": [
+          "file"
+        ],
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "The file name to generate the download url."
+          }
+        },
+        "description": "Request message for `GenerateFileDownloadUrl`."
+      },
+      "GenerateFileDownloadUrlResponse": {
+        "type": "object",
+        "properties": {
+          "preSignedUrl": {
+            "type": "string",
+            "description": "The file download pre-signed URL."
+          }
+        },
+        "description": "Response message for `GenerateFileDownloadUrl`.  buf:lint:ignore"
       },
       "GenerateRecordThumbnailUploadUrlRequest": {
         "required": [
@@ -4976,7 +6775,12 @@
             "$ref": "#/components/schemas/Revision"
           },
           "method": {
-            "type": "integer",
+            "enum": [
+              "GENERATING_REVISION_METHOD_UNSPECIFIED",
+              "PUT",
+              "PATCH"
+            ],
+            "type": "string",
             "description": "The method to create the revision. Default method is PUT.",
             "format": "enum"
           }
@@ -5008,6 +6812,40 @@
           }
         },
         "description": "Response message for GenerateUploadUrl"
+      },
+      "GenerateUploadUrlsRequest": {
+        "required": [
+          "parent",
+          "file"
+        ],
+        "type": "object",
+        "properties": {
+          "parent": {
+            "type": "string",
+            "description": "The blob parent, record resource name."
+          },
+          "file": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The resource name of the files to generate the urls A maximum of `20` url can be generate in a batch. All files must share the same parent record as the `parent` in GenerateUploadUrlsRequest."
+          }
+        },
+        "description": "Request message for GenerateUploadUrls."
+      },
+      "GenerateUploadUrlsResponse": {
+        "type": "object",
+        "properties": {
+          "preSignedUrls": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "file resource name to pre-signed URL. if underlying blob is already uploaded, file will be skipped hence no url will be added."
+          }
+        },
+        "description": "Response message for GenerateUploadUrls."
       },
       "GitArtifact": {
         "type": "object",
@@ -5648,6 +7486,28 @@
           }
         }
       },
+      "ListBlobsResponse": {
+        "type": "object",
+        "properties": {
+          "blobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Blob"
+            },
+            "description": "List of the blobs."
+          },
+          "nextPageToken": {
+            "type": "string",
+            "description": "A token that can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages."
+          },
+          "totalSize": {
+            "type": "integer",
+            "description": "The total size of the request. The value may be an estimate.",
+            "format": "int64"
+          }
+        },
+        "description": "Response message for ListBlobs."
+      },
       "ListDevicesResponse": {
         "type": "object",
         "properties": {
@@ -5713,6 +7573,28 @@
           }
         },
         "description": "Response message for ListFiles."
+      },
+      "ListProjectsResponse": {
+        "type": "object",
+        "properties": {
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Project"
+            },
+            "description": "List of the projects."
+          },
+          "nextPageToken": {
+            "type": "string",
+            "description": "A token that can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages."
+          },
+          "totalSize": {
+            "type": "integer",
+            "description": "The total size of the request. The value may be an estimate.",
+            "format": "int64"
+          }
+        },
+        "description": "Response message for ListProjects."
       },
       "ListRecordsResponse": {
         "type": "object",
@@ -5801,6 +7683,50 @@
           }
         },
         "description": "Response message for ListTasks."
+      },
+      "ListUserProjectsResponse": {
+        "type": "object",
+        "properties": {
+          "userProjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Project"
+            },
+            "description": "A list of the user's projects."
+          },
+          "nextPageToken": {
+            "type": "string",
+            "description": "A token that can be sent as `page_token` to retrieve the next page."
+          },
+          "totalSize": {
+            "type": "integer",
+            "description": "The total size of the request. The value may be an estimate.",
+            "format": "int64"
+          }
+        },
+        "description": "Response for ListUserProjects."
+      },
+      "ListWarehousesResponse": {
+        "type": "object",
+        "properties": {
+          "warehouses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Warehouse"
+            },
+            "description": "List of the warehouses."
+          },
+          "nextPageToken": {
+            "type": "string",
+            "description": "A token that can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages."
+          },
+          "totalSize": {
+            "type": "integer",
+            "description": "The total size of the request. The value may be an estimate.",
+            "format": "int64"
+          }
+        },
+        "description": "Response message for ListWarehouses."
       },
       "LocalObjectReference": {
         "type": "object",
@@ -7096,7 +9022,12 @@
             "description": "The project is archived."
           },
           "visibility": {
-            "type": "integer",
+            "enum": [
+              "PROJECT_VISIBILITY_UNSPECIFIED",
+              "PRIVATE",
+              "INTERNAL"
+            ],
+            "type": "string",
             "description": "The project visibility.",
             "format": "enum"
           }
@@ -7340,6 +9271,26 @@
           }
         },
         "description": "Request message for `UpdateBlobState`."
+      },
+      "RefreshFileMediaRequest": {
+        "required": [
+          "file"
+        ],
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "The file to update the media."
+          },
+          "mediaType": {
+            "type": "string",
+            "description": "See https://en.wikipedia.org/wiki/Media_type. For example, we use `application/vnd.ros1.bag` for ros1 bag."
+          },
+          "media": {
+            "$ref": "#/components/schemas/GoogleProtobufAny"
+          }
+        },
+        "description": "Request message for RefreshFileMedia."
       },
       "ResourceFieldSelector": {
         "type": "object",
@@ -7908,6 +9859,45 @@
         },
         "description": "ServiceAccountTokenProjection represents a projected service account token volume. This projection can be used to insert a service account token into the pods runtime filesystem for use against APIs (Kubernetes API Server or otherwise)."
       },
+      "StatProjectRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "the project name with id"
+          }
+        },
+        "description": "Request message for StatProject."
+      },
+      "StatProjectResponse": {
+        "type": "object",
+        "properties": {
+          "deviceCount": {
+            "type": "integer",
+            "description": "the count of devices.",
+            "format": "int32"
+          },
+          "recordCount": {
+            "type": "integer",
+            "description": "the count of records.",
+            "format": "int32"
+          },
+          "bagCount": {
+            "type": "integer",
+            "description": "the count of bags.",
+            "format": "int32"
+          },
+          "eventCount": {
+            "type": "integer",
+            "description": "the count of events.",
+            "format": "int32"
+          }
+        },
+        "description": "Response message for StatProject."
+      },
       "StatRecordsRequest": {
         "required": [
           "parent"
@@ -7962,7 +9952,15 @@
         "type": "object",
         "properties": {
           "phase": {
-            "type": "integer",
+            "enum": [
+              "BLOB_PHASE_UNSPECIFIED",
+              "PENDING",
+              "TRANSMITTING",
+              "FAILED",
+              "ACTIVE",
+              "DELETED"
+            ],
+            "type": "string",
             "description": "The phase of blob storage is a simple, high-level summary of where the blob is in its lifecycle.",
             "format": "enum"
           },
@@ -8003,6 +10001,20 @@
           }
         },
         "description": "The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors)."
+      },
+      "Storage": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "description": "Storage endpoint."
+          },
+          "region": {
+            "type": "string",
+            "description": "Storage region."
+          }
+        },
+        "description": "Warehouse storage info."
       },
       "StorageOSVolumeSource": {
         "type": "object",
@@ -8229,7 +10241,14 @@
             "description": "The assignee Format: users/{user}"
           },
           "state": {
-            "type": "integer",
+            "enum": [
+              "TASK_STATE_UNSPECIFIED",
+              "UNASSIGNED",
+              "PENDING",
+              "PROCESSING",
+              "DONE"
+            ],
+            "type": "string",
             "description": "The task state",
             "format": "enum"
           },
@@ -8251,7 +10270,11 @@
             "format": "date-time"
           },
           "category": {
-            "type": "integer",
+            "enum": [
+              "TASK_CATEGORY_UNSPECIFIED",
+              "EVENT"
+            ],
+            "type": "string",
             "description": "Task categories.",
             "format": "enum"
           },
@@ -8516,6 +10539,40 @@
         },
         "description": "TypedLocalObjectReference contains enough information to let you locate the typed referenced object inside the same namespace. +structType=atomic"
       },
+      "UnarchiveProjectRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the project to unarchive. Format: warehouses/{warehouse}/projects/{project}"
+          }
+        },
+        "description": "Request message for UnarchiveProject"
+      },
+      "UnbindDevicesRequest": {
+        "required": [
+          "project",
+          "devices"
+        ],
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "The project to unbind devices."
+          },
+          "devices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The devices(resource name) to unbind."
+          }
+        },
+        "description": "The request for UnbindDevices"
+      },
       "User": {
         "type": "object",
         "properties": {
@@ -8624,6 +10681,58 @@
           }
         },
         "description": "ValueFrom describes a location in which to obtain the value to a parameter"
+      },
+      "VerifyProjectSlugRequest": {
+        "type": "object",
+        "properties": {
+          "parent": {
+            "type": "string",
+            "description": "the parent for project slug checks pattern:   for project, parent=warehouses/{warehouse}"
+          },
+          "slug": {
+            "type": "string",
+            "description": "generated slug by input text"
+          }
+        },
+        "description": "The request for VerifyProjectSlug"
+      },
+      "VerifyProjectSlugResponse": {
+        "type": "object",
+        "properties": {
+          "exists": {
+            "type": "boolean",
+            "description": "the slug if exists"
+          },
+          "legal": {
+            "type": "boolean",
+            "description": "the slug if legal"
+          }
+        },
+        "description": "The response for VerifyProjectSlug"
+      },
+      "VerifyWarehouseSlugRequest": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "generated slug by input text"
+          }
+        },
+        "description": "The request for VerifyWarehouseSlug"
+      },
+      "VerifyWarehouseSlugResponse": {
+        "type": "object",
+        "properties": {
+          "exists": {
+            "type": "boolean",
+            "description": "the slug if exists"
+          },
+          "legal": {
+            "type": "boolean",
+            "description": "the slug if legal"
+          }
+        },
+        "description": "The response for VerifyWarehouseSlug"
       },
       "Volume": {
         "type": "object",
@@ -8824,6 +10933,57 @@
           }
         },
         "description": "Represents a vSphere volume resource."
+      },
+      "Warehouse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The resource name of the warehouse. Format: one warehouse belongs to one organization   warehouses/{warehouse_id}"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Human readable warehouse name."
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the warehouse."
+          },
+          "createTime": {
+            "readOnly": true,
+            "type": "string",
+            "description": "Timestamp when the warehouse created.",
+            "format": "date-time"
+          },
+          "updateTime": {
+            "readOnly": true,
+            "type": "string",
+            "description": "Timestamp when the warehouse last updated.",
+            "format": "date-time"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Metadata associated with the warehouse."
+          },
+          "tags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Not readonly k-v info"
+          },
+          "slug": {
+            "type": "string",
+            "description": "The slug from display name user input."
+          },
+          "storage": {
+            "$ref": "#/components/schemas/Storage"
+          }
+        },
+        "description": "A warehouse is a physical building to store all data. A warehouse is a main authorized resource (the other is project)."
       },
       "WeightedPodAffinityTerm": {
         "type": "object",
@@ -9266,6 +11426,10 @@
       "description": "Service for interacting with Files."
     },
     {
+      "name": "ProjectService",
+      "description": "Service for interacting with projects."
+    },
+    {
       "name": "RecordService",
       "description": "Service for interacting with records."
     },
@@ -9280,6 +11444,15 @@
     {
       "name": "TaskService",
       "description": "Service for interacting with tasks."
+    },
+    {
+      "name": "WarehouseService",
+      "description": "Service for interacting with warehouses."
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
     }
   ]
 }
