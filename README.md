@@ -39,6 +39,7 @@ python cos.py -c ./sample.ini ./samples/2.jpg ./samples/3.jpg
 ```
 
 ## Swagger
+Swagger 是 SmartBear 软件公司为 API 开发者提供的一套工具，也是 OpenAPI 规范所依据的一个规范。本地启动一个 server 提供获取 swagger.json 文件，为 ui 渲染做文件准备。
 
 1. 启动本地 server，`python server.py` 
 2. 浏览器打开网址 [swagger](https://petstore.swagger.io/)
