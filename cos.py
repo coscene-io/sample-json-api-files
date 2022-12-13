@@ -5,21 +5,17 @@ import hashlib
 import os
 
 import requests
-
+from requests.auth import HTTPBasicAuth
 
 class ApiClient:
-    def __init__(self, api_base, bearer_token, project_full_slug):
+    def __init__(self, api_base, api_key, project_full_slug):
         """
 
         :rtype: 返回的将是可以即时调用的ApiClient
         """
         self.api_base = api_base
-
-        # 如果输入的token是后半截，会自动加上"Bearer "的前缀
-        if not bearer_token.startswith("Bearer"):
-            bearer_token = "Bearer " + bearer_token
-        self.authorized_headers = {
-            "Authorization": bearer_token,
+        self.basic_auth = HTTPBasicAuth('apikey', api_key)
+        self.request_headers = {
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
@@ -53,7 +49,8 @@ class ApiClient:
             response = requests.post(
                 url=url,
                 json=payload,
-                headers=self.authorized_headers,
+                headers=self.request_headers,
+                auth=self.basic_auth
             )
             if response.status_code == 401:
                 raise Exception("Unauthorized")
@@ -86,7 +83,8 @@ class ApiClient:
             response = requests.post(
                 url=url,
                 json={"project": name_mixin_slug},
-                headers=self.authorized_headers,
+                headers=self.request_headers,
+                auth=self.basic_auth
             )
             if response.status_code == 401:
                 raise Exception("Unauthorized")
@@ -118,7 +116,8 @@ class ApiClient:
             response = requests.post(
                 url=url,
                 json={"warehouse": name_mixin_slug},
-                headers=self.authorized_headers,
+                headers=self.request_headers,
+                auth=self.basic_auth
             )
             if response.status_code == 401:
                 raise Exception("Unauthorized")
@@ -191,7 +190,8 @@ class ApiClient:
             response = requests.post(
                 url=url,
                 json={"blobs": blob_names},
-                headers=self.authorized_headers,
+                headers=self.request_headers,
+                auth=self.basic_auth
             )
 
             print("Successfully get blobs")
@@ -225,7 +225,8 @@ class ApiClient:
             response = requests.post(
                 url=url,
                 json=payload,
-                headers=self.authorized_headers,
+                headers=self.request_headers,
+                auth=self.basic_auth
             )
 
             upload_urls = response.json()
@@ -313,18 +314,18 @@ def main():
     parser.add_argument('-t', '--title', type=str, default="Test Record")
     parser.add_argument('-d', '--description', type=str)
     parser.add_argument('--base-dir', type=str, default=".")
-    parser.add_argument('--bearer-token', type=str)
+    parser.add_argument('--api-key', type=str)
     parser.add_argument('-c', '--config', type=str, default='~/.cos.ini')
     parser.add_argument('files', nargs='*', help='files or directory')
     args = parser.parse_args()
 
     cm = ConfigManager(config_file=args.config)
     args.server_url = args.server_url or cm.get("server_url")
-    args.bearer_token = args.bearer_token or cm.get("bearer_token")
+    args.api_key = args.api_key or cm.get("api_key")
     args.project_slug = args.project_slug or cm.get("project_slug")
 
-    # 0. 初始化您的 BEARER Token, Warehouse ID 和 Project ID
-    api = ApiClient(args.server_url, args.bearer_token, args.project_slug)
+    # 0. 初始化您的 API key, Warehouse ID 和 Project ID
+    api = ApiClient(args.server_url, args.api_key, args.project_slug)
     api.create_record_and_upload_files(args.title, args.files)
 
 
