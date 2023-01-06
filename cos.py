@@ -33,12 +33,12 @@ class ApiClient:
             "Accept": "application/json"
         }
 
-        self._req_sess = requests.Session()
+        self.req_session = requests.Session()
         # noinspection PyTypeChecker
         retries = Retry(total=None,
                         backoff_factor=1,
                         status_forcelist=[500, 502, 503, 504])
-        self._req_sess.mount('https://', HTTPAdapter(max_retries=retries))
+        self.req_session.mount('https://', HTTPAdapter(max_retries=retries))
 
         # 你可以分开输入 <warehouse_uuid> and <project_uuid>
         # 你也可以输入项目的slug（代币的意思）<warehouse_slug>/project_slug>, 例如 default/data_project
@@ -180,55 +180,23 @@ class ApiClient:
             }
 
     @staticmethod
-    def _make_blob_name(record, file_info):
-        return "{record_name}/blobs/{sha256}".format(
+    def _make_file_resource_name(record, file_info):
+        return "{record_name}/files/{filename}".format(
             record_name=record.get("name"),
-            sha256=file_info.get("sha256")
+            filename=file_info.get("filename")
         )
 
-    def get_blobs(self, record, blob_names):
+    def generate_upload_urls(self, record, file_infos):
         """
         :param record: 记录json
-        :param blob_names: 获取的blob名字
-        :return: 获取一列blob，包括他们的状态信息
-        """
-        url = "{api_base}/dataplatform/v1alpha2/{record_name}/blobs:customizedBatchGet".format(
-            api_base=self.api_base,
-            record_name=record.get("name")
-        )
-
-        try:
-            response = requests.post(
-                url=url,
-                json={"blobs": blob_names},
-                headers=self.request_headers,
-                auth=self.basic_auth
-            )
-
-            print("==> Successfully get blobs")
-            return response.json().get("blobs")
-
-        except requests.exceptions.RequestException as e:
-            six.raise_from(CosException('Getting blobs failed'), e)
-
-    def generate_upload_urls(self, record, blobs):
-        """
-        :param record: 记录json
-        :param blobs: 需要生成记录的文档
+        :param file_infos: 需要生成记录的文档
         :return:
         """
-        url = "{api_base}/dataplatform/v1alpha2/{record_name}:batchGenerateUploadUrls".format(
+        url = "{api_base}/dataplatform/v1alpha2/{record_name}:generateUploadUrls".format(
             api_base=self.api_base,
             record_name=record.get("name")
         )
-        payload = {
-            "requests": [
-                {
-                    "blob": blob.get("name")
-                }
-                for blob in blobs
-            ]
-        }
+        payload = {"files": file_infos}
 
         try:
             response = requests.post(
@@ -261,7 +229,7 @@ class ApiClient:
                 disable=None
         ) as t:
             wrapped_file = CallbackIOWrapper(t.update, f, "read")
-            response = self._req_sess.put(upload_url, data=wrapped_file)
+            response = self.req_session.put(upload_url, data=wrapped_file)
             response.raise_for_status()
 
         print("==> Finished uploading " + filepath)
@@ -279,22 +247,14 @@ class ApiClient:
         # 2. 为即将上传的文件创建记录
         record = self.create_record(file_infos, title)
 
-        # 3. 去掉已经上传过的文件
-        blobs = self.get_blobs(record, [
-            self._make_blob_name(record, f) for f in file_infos
-        ])
+        # 3. 为拿到的 Blobs 获取上传链接，已存在的Blob将被过滤
+        upload_urls = self.generate_upload_urls(record, file_infos)
 
-        # 4. 为拿到的 Blobs 获取上传链接，已存在的Blob将被过滤
-        upload_urls = self.generate_upload_urls(record, [
-            blob for blob in blobs
-            if blob.get("state").get("phase") != "ACTIVE"
-        ])
-
-        # 5. 上传文件
+        # 4. 上传文件
         for f in file_infos:
-            blob_name = self._make_blob_name(record, f)
-            if blob_name in upload_urls:
-                self.upload_file(f.get('filepath'), upload_urls.get(blob_name))
+            key = self._make_file_resource_name(record, f)
+            if key in upload_urls:
+                self.upload_file(f.get('filepath'), upload_urls.get(key))
 
         print("==> Done")
 
@@ -328,7 +288,7 @@ class GSDaemon:
         self.base_dir = base_dir
 
         def signal_handler(sig, _):
-            print("\nProgram exiting gracefully by %s" % sig)
+            print("\nProgram exiting gracefully by {sig}".format(sig=sig))
             sys.exit(0)
 
         signal.signal(signal.SIGINT, signal_handler)
@@ -345,7 +305,9 @@ class GSDaemon:
 
         # 如果 flag（文件已经找齐）为 True 并且还未 uploaded.
         if error_json['flag'] and "uploaded" not in error_json:
-            print("==> Find an error %s" % error_json_path)
+            print("==> Find an error json {error_json_path}".format(
+                error_json_path=error_json_path
+            ))
             error_dir, _ = error_json_path.rsplit('.', 1)
             error_tar = error_dir + ".log"
 
@@ -362,10 +324,15 @@ class GSDaemon:
                 ]
 
             else:
-                print("==> Neither %s nor %s exists." % (error_dir, error_tar))
+                print("==> Neither {error_dir} nor {error_tar} exists.".format(
+                    error_dir=error_dir,
+                    error_tar=error_tar
+                ))
                 return
 
-            print("==> Files to upload: %s" % files)
+            print("==> Files to upload: \n\t{files}".format(
+                files="\n\t".join(files)
+            ))
             self.api.create_record_and_upload_files(os.path.basename(error_dir), files)
 
         # 把上传状态写回json
