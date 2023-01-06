@@ -10,6 +10,7 @@ import traceback
 from ConfigParser import ConfigParser
 
 import requests
+import six as six
 from requests.adapters import HTTPAdapter, Retry
 from requests.auth import HTTPBasicAuth
 from tqdm import tqdm
@@ -33,6 +34,7 @@ class ApiClient:
         }
 
         self._req_sess = requests.Session()
+        # noinspection PyTypeChecker
         retries = Retry(total=None,
                         backoff_factor=1,
                         status_forcelist=[500, 502, 503, 504])
@@ -73,11 +75,11 @@ class ApiClient:
                 raise CosException("Unauthorized")
 
             result = response.json()
-            print("Successfully created the record " + result.get("name"))
+            print("==> Successfully created the record " + result.get("name"))
             return result
 
         except requests.exceptions.RequestException as e:
-            raise CosException("Create Record failed"), None, sys.exc_info()[2]
+            six.raise_from(CosException('Create Record failed'), e)
 
     def _convert_project_slug(self, warehouse_id, proj_slug):
         """
@@ -105,14 +107,14 @@ class ApiClient:
                 raise CosException("Unauthorized")
 
             result = response.json()
-            print("The project name for {slug} is {name}".format(
+            print("==> The project name for {slug} is {name}".format(
                 slug=proj_slug,
                 name=result.get("project")
             ))
             return result.get('project')
 
         except requests.exceptions.RequestException as e:
-            raise CosException("Convert Project Slug failed"), None, sys.exc_info()[2]
+            six.raise_from(CosException('Convert Project Slug failed'), e)
 
     def _convert_warehouse_slug(self, wh_slug):
         """
@@ -136,18 +138,18 @@ class ApiClient:
                 raise CosException("Unauthorized")
 
             result = response.json()
-            print("The warehouse name for {slug} is {name}".format(
+            print("==> The warehouse name for {slug} is {name}".format(
                 slug=wh_slug,
                 name=result.get("warehouse")
             ))
             return result.get('warehouse')
 
         except requests.exceptions.RequestException as e:
-            raise CosException("Convert Warehouse Slug failed"), None, sys.exc_info()[2]
+            six.raise_from(CosException('Convert Warehouse Slug failed'), e)
 
     def project_slug_to_name(self, project_full_slug):
         """
-        :param project_full_slug: 项目的slug（代币的意思）<warehouse_slug>/project_slug>, 例如 default/data_project
+        :param: project_full_slug: 项目的slug（代币的意思）<warehouse_slug>/project_slug>, 例如 default/data_project
         :return: 项目的正则名，例如
             warehouses/7ab79a38-49fb-4411-8f1b-dff4ae95b0e5/projects/8793e727-5ed9-4403-98a3-58906a975e55
         """
@@ -203,11 +205,11 @@ class ApiClient:
                 auth=self.basic_auth
             )
 
-            print("Successfully get blobs")
+            print("==> Successfully get blobs")
             return response.json().get("blobs")
 
         except requests.exceptions.RequestException as e:
-            raise CosException("Getting blobs failed"), None, sys.exc_info()[2]
+            six.raise_from(CosException('Getting blobs failed'), e)
 
     def generate_upload_urls(self, record, blobs):
         """
@@ -237,41 +239,39 @@ class ApiClient:
             )
 
             upload_urls = response.json()
-            print("Successfully requested upload urls")
+            print("==> Successfully requested upload urls")
             return upload_urls.get("preSignedUrls")
 
         except requests.exceptions.RequestException as e:
-            raise CosException("Request upload urls failed"), None, sys.exc_info()[2]
+            six.raise_from(CosException('Request upload urls failed'), e)
 
-    def upload_file_with_progress(self, filepath, upload_url):
-        total_size = os.path.getsize(filepath)
-
-        with open(filepath, "rb") as f:
-            print("Start uploading " + filepath)
-            with tqdm(total=total_size, unit="B", unit_scale=True, unit_divisor=1024) as t:
-                wrapped_file = CallbackIOWrapper(t.update, f, "read")
-                response = self._req_sess.put(upload_url, data=wrapped_file)
-                response.raise_for_status()
-            print("Finished uploading " + filepath)
-
-    @staticmethod
-    def upload_file(filepath, upload_url):
+    def upload_file(self, filepath, upload_url):
         """
         :param filepath: 需要上传文件的本地路径
         :param upload_url: 上传用的预签名url
         """
-        with open(filepath, 'rb') as f:
-            print("Start uploading " + filepath)
-            response = requests.put(upload_url, data=f)
+        print("==> Start uploading " + filepath)
+
+        total_size = os.path.getsize(filepath)
+        with open(filepath, "rb") as f, tqdm(
+                total=total_size,
+                unit="B",
+                unit_scale=True,
+                unit_divisor=1024,
+                disable=None
+        ) as t:
+            wrapped_file = CallbackIOWrapper(t.update, f, "read")
+            response = self._req_sess.put(upload_url, data=wrapped_file)
             response.raise_for_status()
-            print("Finished uploading " + filepath)
+
+        print("==> Finished uploading " + filepath)
 
     def create_record_and_upload_files(self, title, filepaths):
         """
         :param title: 记录的标题
         :param filepaths: 需要上传的本地文件清单
         """
-        print("Start creating records for Project " + self.project_name)
+        print("==> Start creating records for Project " + self.project_name)
 
         # 1. 计算sha256，生成文件清单
         file_infos = [self._make_file_info(path) for path in filepaths]
@@ -294,9 +294,9 @@ class ApiClient:
         for f in file_infos:
             blob_name = self._make_blob_name(record, f)
             if blob_name in upload_urls:
-                self.upload_file_with_progress(f.get('filepath'), upload_urls.get(blob_name))
+                self.upload_file(f.get('filepath'), upload_urls.get(blob_name))
 
-        print("Done")
+        print("==> Done")
 
 
 class ConfigManager:
@@ -327,8 +327,8 @@ class GSDaemon:
         self.api = api
         self.base_dir = base_dir
 
-        def signal_handler(signal, frame):
-            print("\nProgram exiting gracefully")
+        def signal_handler(sig, _):
+            print("\nProgram exiting gracefully by %s" % sig)
             sys.exit(0)
 
         signal.signal(signal.SIGINT, signal_handler)
@@ -339,36 +339,34 @@ class GSDaemon:
                 if filename.endswith('.json'):
                     yield os.path.join(root, filename)
 
-    def _upload_error_data(self, error_json_path):
-        # FIXME：下面如果路径中还有其他点可能会出错
-        error_dir, _ = error_json_path.split('.', 2)
-        error_tar = error_dir + ".log"
-
-        if os.path.exists(error_dir):
-            # 上传目录下所有数据
-            files = [
-                os.path.join(root, filename)
-                for root, _, files in os.walk(error_dir)
-                for filename in files
-            ]
-        elif os.path.exists(error_tar):
-            # 上传压缩打包的数据
-            files = [error_tar]
-        else:
-            print("Neither %s nor %s exists." % (error_dir, error_tar))
-            return
-
-        print("Files to upload: %s" % files)
-        self.api.create_record_and_upload_files(os.path.basename(error_dir), files)
-
     def handle_error_json(self, error_json_path):
         with open(error_json_path, 'r') as fp:
             error_json = json.load(fp)
 
         # 如果 flag（文件已经找齐）为 True 并且还未 uploaded.
         if error_json['flag'] and "uploaded" not in error_json:
-            print("Find an error %s" % error_json_path)
-            self._upload_error_data(error_json_path)
+            print("==> Find an error %s" % error_json_path)
+            error_dir, _ = error_json_path.rsplit('.', 1)
+            error_tar = error_dir + ".log"
+
+            if os.path.exists(error_tar):
+                # 上传压缩打包的数据
+                files = [error_tar]
+
+            elif os.path.exists(error_dir):
+                # 上传目录下所有数据
+                files = [
+                    os.path.join(root, filename)
+                    for root, _, files in os.walk(error_dir)
+                    for filename in files
+                ]
+
+            else:
+                print("==> Neither %s nor %s exists." % (error_dir, error_tar))
+                return
+
+            print("==> Files to upload: %s" % files)
+            self.api.create_record_and_upload_files(os.path.basename(error_dir), files)
 
         # 把上传状态写回json
         error_json['uploaded'] = True
@@ -377,15 +375,13 @@ class GSDaemon:
 
     def run(self):
         while True:
-            print("Search for new error json")
+            print("==> Search for new error json")
             for error_json_path in self._find_error_json():
                 # noinspection PyBroadException
                 try:
                     self.handle_error_json(error_json_path)
                 except Exception as _:
                     traceback.print_exc()
-                finally:
-                    pass
 
             time.sleep(60)
 
@@ -407,6 +403,7 @@ def main():
     args.server_url = args.server_url or cm.get("server_url")
     args.api_key = args.api_key or cm.get("api_key")
     args.project_slug = args.project_slug or cm.get("project_slug")
+    args.base_dir = args.base_dir if args.base_dir and args.base_dir != "." else cm.get("base_dir")
 
     # 0. 初始化您的 API key, Warehouse ID 和 Project ID
     api = ApiClient(args.server_url, args.api_key, args.project_slug)

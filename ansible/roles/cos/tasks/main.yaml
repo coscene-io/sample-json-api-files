@@ -1,0 +1,69 @@
+---
+- name: Install Python pip
+  apt: name={{ item }} update_cache=true state=present force_apt_get=yes
+  with_items:
+    - python-pip
+  become: true
+
+- name: Add group
+  group:
+    name: "{{ user }}"
+    state: present
+  become: true
+
+- name: Add user
+  user:
+    name: "{{ user }}"
+    groups: "{{ user }}"
+    shell: /sbin/nologin
+    create_home: no
+    append: yes
+    comment: "user for coScene service"
+    state: present
+  become: true
+
+- name: Make a config
+  become_user: "{{ user }}"
+  template:
+    src: cos.ini.j2
+    dest: ~/.cos.ini
+    mode: 400
+
+- name: Ensure the app directory
+  #become_user: "{{ user }}"
+  file:
+    path: "{{ cos_dir }}/log"
+    state: directory
+
+- name: Make cos service
+  template:
+    src: cos.service.j2
+    dest: /lib/systemd/system/cos.service
+
+- name: Copy the scripts
+  copy:
+    src: '{{ item }}'
+    dest: '{{ cos_dir }}/{{ item }}'
+  loop:
+    - requirements.txt
+    - cos.py
+
+- name: Copy the wheels
+  copy:
+    src: wheels/
+    dest: '{{ cos_dir }}/wheels/'
+
+- name: Install all found wheels
+  command: pip install -r requirements.txt --no-index --find-links=wheels/
+  args:
+    chdir: "{{ cos_dir }}"
+
+- name: Install dependencies
+  pip:
+    requirements: "{{ cos_dir }}/requirements.txt"
+
+- name: Start a service
+  systemd:
+    name: cos
+    state: started
+    daemon_reload: yes

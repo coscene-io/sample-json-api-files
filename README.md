@@ -8,11 +8,8 @@ Tested with the following setup:
 - a maximum of 500mb video files
 
 ## 依赖
-
-- requests
-
 ```shell
-pip install requests==2.27.1
+pip install -r requirements.txt
 ```
 
 ## 配置
@@ -35,7 +32,8 @@ api_key = <API_KEY>
 
 ## Run
 ```shell
-python cos.py -c ./sample.ini ./samples/2.jpg ./samples/3.jpg
+python cos.py -c ./sample.ini ./mocks/sample_data/2.jpg ./mocks/sample_data/3.jpg
+python cos.py -c ./sample.ini --daemon --base-dir ./mocks/sample_data
 ```
 
 ## Swagger

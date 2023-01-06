@@ -1,0 +1,26 @@
+{
+    "processStatus": 1, 
+    "uploaded": true, 
+    "code": 12085, 
+    "log": [
+        "/root/.ros/video_recorder-3-11.log", 
+        "/root/.ros/chassis-3-12.log", 
+        "/root/.ros/stair_detect-3-12.log", 
+        "/root/.ros/place_similarity_calculator-3-12.log"
+    ], 
+    "syslog": [], 
+    "bag": [
+        "/root/GAUSSIAN_RUNTIME_DIR/bag/GS_2022-12-28-11-44-38_2.bag", 
+        "/root/GAUSSIAN_RUNTIME_DIR/bag/GS_2022-12-28-12-01-12_8.orig.bag", 
+        "/root/GAUSSIAN_RUNTIME_DIR/bag/GS_2022-12-28-11-56-56_6.bag", 
+        "/root/GAUSSIAN_RUNTIME_DIR/bag/GS_2022-12-28-11-58-56_7.bag", 
+        "/root/GAUSSIAN_RUNTIME_DIR/bag/GS_2022-12-28-11-51-46_4.bag", 
+        "/root/GAUSSIAN_RUNTIME_DIR/bag/GS_2022-12-28-12-03-36_9.bag", 
+        "/root/GAUSSIAN_RUNTIME_DIR/bag/GS_2022-12-28-11-54-52_5.bag", 
+        "/root/GAUSSIAN_RUNTIME_DIR/bag/GS_2022-12-28-11-47-59_3.bag", 
+        "/root/GAUSSIAN_RUNTIME_DIR/bag/GS_2022-12-28-10-27-01_0.bag"
+    ], 
+    "flag": true, 
+    "startTime": 1672199872, 
+    "startTimeString": "2022-12-28-11-57-52"
+}

@@ -1,0 +1,5 @@
+---
+- name: Install cos service
+  hosts: all
+  roles:
+      - cos
