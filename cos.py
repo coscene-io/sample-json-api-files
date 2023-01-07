@@ -372,6 +372,9 @@ def main():
     args.project_slug = args.project_slug or cm.get("project_slug")
     args.base_dir = args.base_dir if args.base_dir and args.base_dir != "." else cm.get("base_dir")
 
+    if not args.server_url or not args.api_key or not args.project_slug:
+        raise CosException("Config items must not be empty!")
+
     # 0. 初始化您的 API key, Warehouse ID 和 Project ID
     api = ApiClient(args.server_url, args.api_key, args.project_slug)
 

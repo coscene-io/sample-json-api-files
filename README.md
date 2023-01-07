@@ -22,7 +22,7 @@ api_key = <API_KEY>
 ```
 替换上面带尖括号的里的内容
 
-### 从地址栏获得slug
+### 从Project设置获得slug
 ![find slug](img/slug.png)
 
 ### 从 coscene 网页右上角 点击头像 -> 设置 -> 安全 里生成一个对应的 apikey 使用
