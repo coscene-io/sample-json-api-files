@@ -59,4 +59,4 @@ class ConfigManager:
         print("==> No config found".format(
             conf_path=conf_path
         ))
-        return ConfigManager.DEFAULT_CONFIG_PATHS[0]
+        return self.DEFAULT_CONFIG_PATHS[0]

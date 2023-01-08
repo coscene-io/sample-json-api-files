@@ -11,3 +11,6 @@ ansible/files
 build/
 *.egg-info/
 dist/
+
+inventory/
+!inventory/hosts.yaml.example

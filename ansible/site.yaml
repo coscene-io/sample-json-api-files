@@ -1,5 +1,6 @@
 ---
 - name: Install cos service
   hosts: all
+  become: true
   roles:
       - cos

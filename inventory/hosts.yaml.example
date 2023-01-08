@@ -1,0 +1,9 @@
+testing:
+  hosts:
+    XXX.XXX.XXX.XXX:
+      ansible_user: root
+  vars:
+    server_url: https://api.coscene.cn
+    project_slug: default/yang-ming-zhuan-yong
+    api_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    base_dir: /root/launch/error_logs

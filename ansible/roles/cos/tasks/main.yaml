@@ -1,15 +1,31 @@
 ---
 - name: Install Python pip
-  apt: name={{ item }} update_cache=true state=present force_apt_get=yes
-  with_items:
-    - python-pip
-  become: true
+  apt:
+    name:
+      - python-pip
+      - python-setuptools
+      - python-virtualenv
+    update_cache: true
+    state: present
+    force_apt_get: yes
+
+- name: Upgrade pip/setuptools
+  pip:
+    name:
+    - "pip<21.0,>=20.0"
+    - "setuptools~=41.0.0"
+    executable: pip
+
+- name: Install virtualenv
+  pip:
+    name:
+    - "virtualenv==20.15.1"
+    executable: pip
 
 - name: Add group
   group:
     name: "{{ user }}"
     state: present
-  become: true
 
 - name: Add user
   user:
@@ -20,30 +36,66 @@
     append: yes
     comment: "user for coScene service"
     state: present
-  become: true
-
-- name: Make a config
-  become_user: "{{ user }}"
-  template:
-    src: cos.ini.j2
-    dest: ~/.cos.ini
-    mode: 400
 
 - name: Ensure the app directory
-  #become_user: "{{ user }}"
   file:
-    path: "{{ cos_dir }}/log"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    path: "{{ item }}"
     state: directory
+  loop:
+    - "{{ cos_dir }}/log"
+    - /etc/cos
+
+- name: Make a config
+  template:
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    src: cos.ini.j2
+    dest: "/etc/cos/config.ini"
+    mode: 400
+
+#- name: Copy the requirements.txt
+#  copy:
+#    src: requirements.txt
+#    dest: '{{ cos_dir }}'
 
 - name: Copy the wheels
   copy:
-    src: wheels/
-    dest: '{{ cos_dir }}/wheels/'
+    src: "{{ item }}"
+    dest: '{{ cos_dir }}/{{ item }}'
+  loop:
+    - requirements.txt
+    - wheels/
+
+# - name: Install all found wheels
+#   command: pip install -r requirements.txt --use-wheel --no-index --find-links wheels/
+#   args:
+#     chdir: "{{ cos_dir }}"
+
+#- name: Find to catch recursively all wheel
+#  find:
+#    paths: "{{ cos_dir }}/wheels/"
+#    patterns: '*.whl'
+#    recurse: true
+#  register: wheel_search
 
 - name: Install all found wheels
-  command: pip install -r requirements.txt --use-wheel --no-index --find-links wheels/
-  args:
-    chdir: "{{ cos_dir }}"
+  pip:
+    requirements: "{{ cos_dir }}/requirements.txt"
+    extra_args: "--no-index --find-links={{ cos_dir }}/wheels/"
+#    virtualenv: "{{ cos_dir }}/venv"
+#    virtualenv_python: "/usr/bin/python"
+#    virtualenv_command: "/usr/local/bin/virtualenv"
+    executable: pip
+
+- name: Install all wheels
+  pip:
+    name: coSentinel
+    extra_args: "--no-index --find-links={{ cos_dir }}/wheels/"
+#    virtualenv: "{{ cos_dir }}/venv"
+#    virtualenv_command: "/usr/bin/python -m venv {{ cos_dir }}/venv"
+    executable: pip
 
 - name: Make cos service
   template:
