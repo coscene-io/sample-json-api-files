@@ -50,9 +50,10 @@ lint: init
 
 .PHONY: pre-ansible ## Create package and upload to pypi
 pre-ansible: requirements.txt
+	mkdir -p ansible/files/wheels
+	python setup.py bdist_wheel --plat-name=any
+	cp dist/*.whl ansible/files/wheels
 	pip wheel -r requirements.txt -w ansible/files/wheels
-	cp requirements.txt ansible/files
-	cp cos.py ansible/files
 
 .PHONY: ansible
 ansible: pre-ansible

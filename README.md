@@ -32,8 +32,37 @@ api_key = <API_KEY>
 
 ## Run
 ```shell
-python cos.py -c ./sample.ini ./mocks/sample_data/2.jpg ./mocks/sample_data/3.jpg
-python cos.py -c ./sample.ini --daemon --base-dir ./mocks/sample_data
+python api.py -c ./sample.ini ./mocks/sample_data/2.jpg ./mocks/sample_data/3.jpg
+python api.py -c ./sample.ini --daemon --base-dir ./mocks/sample_data
+```
+
+## 部署到一台Ubuntu操作系统的机器人
+- 本地电脑（执行端）需要安装 `ansible`
+- 本地电脑（执行端）需要修改`inventory`文件
+请参考 [Ansible Inventory 文件](https://ansible-tran.readthedocs.io/en/latest/docs/intro_inventory.html)
+以及 [How to build your inventory](https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html)
+```yaml
+robots:
+  hosts:
+    MACHINE-1:
+      ansible_user: ecs-user
+    MACHINE-2:
+      ansible_user: root
+    MACHINE-3:
+  vars:
+    server_url: https://api.coscene.cn
+    project_slug: <WAREHOUSE/PROJECT>
+    api_key: <API_KEY>
+    base_dir: <THE_DIRECTORY_TO_MONITOR>
+```
+以上hosts下的每一台机器，都需要copy您的ssh key才能够免密部署。
+如果你使用git，可能你已经有ssh key了。替换以下的用户，机器ip，端口部分。
+```shell
+ssh-copy-id -o StrictHostKeyChecking=no <user>@<machine-ip>:<port>
+```
+经过如上部署后，执行以下指令即可批量部署
+```shell
+make ansible
 ```
 
 ## Swagger

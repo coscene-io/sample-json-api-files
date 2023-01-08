@@ -35,32 +35,20 @@
     path: "{{ cos_dir }}/log"
     state: directory
 
-- name: Make cos service
-  template:
-    src: cos.service.j2
-    dest: /lib/systemd/system/cos.service
-
-- name: Copy the scripts
-  copy:
-    src: '{{ item }}'
-    dest: '{{ cos_dir }}/{{ item }}'
-  loop:
-    - requirements.txt
-    - cos.py
-
 - name: Copy the wheels
   copy:
     src: wheels/
     dest: '{{ cos_dir }}/wheels/'
 
 - name: Install all found wheels
-  command: pip install -r requirements.txt --no-index --find-links=wheels/
+  command: pip install -r requirements.txt --use-wheel --no-index --find-links wheels/
   args:
     chdir: "{{ cos_dir }}"
 
-- name: Install dependencies
-  pip:
-    requirements: "{{ cos_dir }}/requirements.txt"
+- name: Make cos service
+  template:
+    src: cos.service.j2
+    dest: /lib/systemd/system/cos.service
 
 - name: Start a service
   systemd:

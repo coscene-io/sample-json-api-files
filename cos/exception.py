@@ -1,0 +1,2 @@
+class CosException(Exception):
+    pass

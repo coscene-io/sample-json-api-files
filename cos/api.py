@@ -1,24 +1,21 @@
 # -*- coding:utf-8 -*-
-import argparse
 import hashlib
-import json
-import os
-import signal
-import sys
-import time
-import traceback
-from ConfigParser import ConfigParser
 
 import requests
 import six as six
 from requests.adapters import HTTPAdapter, Retry
 from requests.auth import HTTPBasicAuth
+from requests.exceptions import RequestException
 from tqdm import tqdm
 from tqdm.utils import CallbackIOWrapper
 
+from cos.exception import CosException
 
-class CosException(Exception):
-    pass
+try:
+    # noinspection PyCompatibility
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
 
 
 class ApiClient:
@@ -37,7 +34,7 @@ class ApiClient:
         # noinspection PyTypeChecker
         retries = Retry(total=None,
                         backoff_factor=1,
-                        status_forcelist=[500, 502, 503, 504])
+                        status_forcelist=[500, 501, 502, 503, 504])
         self.req_session.mount('https://', HTTPAdapter(max_retries=retries))
 
         # 你可以分开输入 <warehouse_uuid> and <project_uuid>
@@ -78,7 +75,7 @@ class ApiClient:
             print("==> Successfully created the record " + result.get("name"))
             return result
 
-        except requests.exceptions.RequestException as e:
+        except RequestException as e:
             six.raise_from(CosException('Create Record failed'), e)
 
     def _convert_project_slug(self, warehouse_id, proj_slug):
@@ -113,7 +110,7 @@ class ApiClient:
             ))
             return result.get('project')
 
-        except requests.exceptions.RequestException as e:
+        except RequestException as e:
             six.raise_from(CosException('Convert Project Slug failed'), e)
 
     def _convert_warehouse_slug(self, wh_slug):
@@ -144,7 +141,7 @@ class ApiClient:
             ))
             return result.get('warehouse')
 
-        except requests.exceptions.RequestException as e:
+        except RequestException as e:
             six.raise_from(CosException('Convert Warehouse Slug failed'), e)
 
     def project_slug_to_name(self, project_full_slug):
@@ -173,9 +170,9 @@ class ApiClient:
                 sha256_hash.update(byte_block)
 
             return {
-                "filename": os.path.basename(filepath),
+                "filename": Path(filepath).name,
                 "sha256": sha256_hash.hexdigest(),
-                "size": os.path.getsize(filepath),
+                "size": Path(filepath).stat().st_size,
                 "filepath": filepath
             }
 
@@ -210,7 +207,7 @@ class ApiClient:
             print("==> Successfully requested upload urls")
             return upload_urls.get("preSignedUrls")
 
-        except requests.exceptions.RequestException as e:
+        except RequestException as e:
             six.raise_from(CosException('Request upload urls failed'), e)
 
     def upload_file(self, filepath, upload_url):
@@ -220,14 +217,14 @@ class ApiClient:
         """
         print("==> Start uploading " + filepath)
 
-        total_size = os.path.getsize(filepath)
-        with open(filepath, "rb") as f, tqdm(
-                total=total_size,
+        # 使用tqdm实现进度条，disable=None的时候在非tty环境不显示进度
+        with tqdm(
+                total=Path(filepath).stat().st_size,
                 unit="B",
                 unit_scale=True,
                 unit_divisor=1024,
                 disable=None
-        ) as t:
+        ) as t, open(filepath, "rb") as f:
             wrapped_file = CallbackIOWrapper(t.update, f, "read")
             response = self.req_session.put(upload_url, data=wrapped_file)
             response.raise_for_status()
@@ -257,133 +254,3 @@ class ApiClient:
                 self.upload_file(f.get('filepath'), upload_urls.get(key))
 
         print("==> Done")
-
-
-class ConfigManager:
-    def __init__(self, config_file, profile='default'):
-        self.config_file = os.path.expanduser(config_file)
-        self.profile = profile
-        self.parser = ConfigParser()
-        self.load()
-
-    def get(self, key):
-        return self.parser.has_option(self.profile, key) and self.parser.get(self.profile, key) or None
-
-    def set(self, key, value):
-        if not self.parser.has_section(self.profile):
-            self.parser.add_section(self.profile)
-        self.parser.set(self.profile, key, value)
-
-    def load(self):
-        self.parser.read(self.config_file)
-
-    def save(self):
-        with open(self.config_file) as f:
-            self.parser.write(f)
-
-
-class GSDaemon:
-    def __init__(self, api, base_dir):
-        self.api = api
-        self.base_dir = base_dir
-
-        def signal_handler(sig, _):
-            print("\nProgram exiting gracefully by {sig}".format(sig=sig))
-            sys.exit(0)
-
-        signal.signal(signal.SIGINT, signal_handler)
-
-    def _find_error_json(self):
-        for root, _, files in os.walk(self.base_dir):
-            for filename in files:
-                if filename.endswith('.json'):
-                    yield os.path.join(root, filename)
-
-    def handle_error_json(self, error_json_path):
-        with open(error_json_path, 'r') as fp:
-            error_json = json.load(fp)
-
-        # 如果 flag（文件已经找齐）为 True 并且还未 uploaded.
-        if error_json['flag'] and "uploaded" not in error_json:
-            print("==> Find an error json {error_json_path}".format(
-                error_json_path=error_json_path
-            ))
-            error_dir, _ = error_json_path.rsplit('.', 1)
-            error_tar = error_dir + ".log"
-
-            if os.path.exists(error_tar):
-                # 上传压缩打包的数据
-                files = [error_tar]
-
-            elif os.path.exists(error_dir):
-                # 上传目录下所有数据
-                files = [
-                    os.path.join(root, filename)
-                    for root, _, files in os.walk(error_dir)
-                    for filename in files
-                ]
-
-            else:
-                print("==> Neither {error_dir} nor {error_tar} exists.".format(
-                    error_dir=error_dir,
-                    error_tar=error_tar
-                ))
-                return
-
-            print("==> Files to upload: \n\t{files}".format(
-                files="\n\t".join(files)
-            ))
-            self.api.create_record_and_upload_files(os.path.basename(error_dir), files)
-
-        # 把上传状态写回json
-        error_json['uploaded'] = True
-        with open(error_json_path, 'w') as fp:
-            json.dump(error_json, fp, indent=4)
-
-    def run(self):
-        while True:
-            print("==> Search for new error json")
-            for error_json_path in self._find_error_json():
-                # noinspection PyBroadException
-                try:
-                    self.handle_error_json(error_json_path)
-                except Exception as _:
-                    traceback.print_exc()
-
-            time.sleep(60)
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--server-url', type=str)
-    parser.add_argument('-p', '--project-slug', type=str)
-    parser.add_argument('-t', '--title', type=str, default="Test Record")
-    parser.add_argument('-d', '--description', type=str)
-    parser.add_argument('--base-dir', type=str, default=".")
-    parser.add_argument('--api-key', type=str)
-    parser.add_argument('-c', '--config', type=str, default='~/.cos.ini')
-    parser.add_argument('files', nargs='*', help='files or directory')
-    parser.add_argument('--daemon', action="store_true")
-    args = parser.parse_args()
-
-    cm = ConfigManager(config_file=args.config)
-    args.server_url = args.server_url or cm.get("server_url")
-    args.api_key = args.api_key or cm.get("api_key")
-    args.project_slug = args.project_slug or cm.get("project_slug")
-    args.base_dir = args.base_dir if args.base_dir and args.base_dir != "." else cm.get("base_dir")
-
-    if not args.server_url or not args.api_key or not args.project_slug:
-        raise CosException("Config items must not be empty!")
-
-    # 0. 初始化您的 API key, Warehouse ID 和 Project ID
-    api = ApiClient(args.server_url, args.api_key, args.project_slug)
-
-    if args.daemon:
-        # do something in daemon
-        GSDaemon(api, args.base_dir).run()
-    else:
-        api.create_record_and_upload_files(args.title, args.files)
-
-
-if __name__ == "__main__":
-    main()
