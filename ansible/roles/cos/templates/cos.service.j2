@@ -5,10 +5,11 @@ After=network.target
 
 [Service]
 Type=simple
+User={{ user }}
 WorkingDirectory={{ cos_dir }}
 StandardOutput=syslog
 StandardError=syslog
-ExecStart=/usr/bin/python -m cos --daemon --base-dir {{ base_dir }}
+ExecStart={{ cos_dir }}/venv/bin/cos --daemon --base-dir {{ base_dir }} -c {{ cos_dir }}/config.ini
 SyslogIdentifier=cos
 Restart=on-failure
 

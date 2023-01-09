@@ -1,9 +1,27 @@
 ---
 - name: Install Python pip
-  apt: name={{ item }} update_cache=true state=present force_apt_get=yes
-  with_items:
-    - python-pip
+  apt:
+    name:
+      - python-pip
+      - python-setuptools
+      - python-virtualenv
+    update_cache: true
+    state: present
+    force_apt_get: yes
   become: true
+
+- name: Upgrade pip/setuptools
+  pip:
+    name:
+    - "pip<21.0"
+    - "setuptools~=41.0.0"
+    executable: pip
+
+- name: Install virtualenv
+  pip:
+    name:
+    - virtualenv==20.15.1
+    executable: pip
 
 - name: Add group
   group:
@@ -22,28 +40,56 @@
     state: present
   become: true
 
+- name: Ensure the app directory
+  file:
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    path: "{{ cos_dir }}/log"
+    state: directory
+  become: true
+
 - name: Make a config
   become_user: "{{ user }}"
   template:
+    owner: "{{ user }}"
+    group: "{{ user }}"
     src: cos.ini.j2
-    dest: ~/.cos.ini
+    dest: "{{ cos_dir }}/config.ini" 
     mode: 400
 
-- name: Ensure the app directory
-  #become_user: "{{ user }}"
-  file:
-    path: "{{ cos_dir }}/log"
-    state: directory
+- name: Copy the wheels
+  copy:
+    src: requirements.txt
+    dest: '{{ cos_dir }}'
 
 - name: Copy the wheels
   copy:
     src: wheels/
     dest: '{{ cos_dir }}/wheels/'
 
-- name: Install all found wheels
-  command: pip install -r requirements.txt --use-wheel --no-index --find-links wheels/
-  args:
-    chdir: "{{ cos_dir }}"
+# - name: Install all found wheels
+#   command: pip install -r requirements.txt --use-wheel --no-index --find-links wheels/
+#   args:
+#     chdir: "{{ cos_dir }}"
+
+# - name: Find to catch recursively all wheel
+#   find:
+#     paths: "{{ cos_dir }}/wheels/"
+#     patterns: '*.whl'
+#     recurse: true
+#   register: wheel_search
+
+# - name: Install all found wheels
+#   pip:
+#     name: "{{ wheel_search.files | map(attribute='path') | list }}"
+#     executable: pip
+  
+- name: Install all wheels
+  pip:
+    requirements: "{{ cos_dir }}/requirements.txt"
+    executable: pip
+    # virtualenv: "{{ cos_dir }}/venv"
+    # virtualenv_command: "/usr/bin/python -m venv {{ cos_dir }}/venv"
 
 - name: Make cos service
   template:
